@@ -3,94 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KBOOK - Premium Edition</title>
+    <title>KBOOK - Global Social Platform</title>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <style>
-        :root { --fb-blue: #075e54; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-        #app-container { width: 100%; max-width: 500px; background: white; position: relative; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        :root { --fb-blue: #1877f2; --fb-bg: #f0f2f5; --fb-green: #42b72a; --text-gray: #65676b; }
+        body { font-family: Helvetica, Arial, sans-serif; margin: 0; background: var(--fb-bg); color: #1c1e21; overflow: hidden; }
+        #app-container { width: 100%; max-width: 500px; margin: 0 auto; height: 100vh; background: white; position: relative; display: flex; flex-direction: column; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
 
-        /* ১. ল্যাঙ্গুয়েজ ইন্টারভিউ (শুরুতে আসবে) */
-        #lang-screen { position: absolute; inset: 0; background: white; z-index: 6000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        .lang-btn { background: #f0f2f5; border: 1px solid #ddd; padding: 15px; width: 80%; margin: 5px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        /* 1. Language Selection Overlay */
+        #lang-overlay { position: absolute; inset: 0; background: white; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .lang-card { width: 85%; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 
-        /* ২. লোগো এনিমেশন */
-        #splash { position: absolute; inset: 0; background: var(--fb-blue); z-index: 5500; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .logo-img { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; animation: zoomIn 1.5s forwards; }
-        @keyframes zoomIn { from { transform: scale(0); } to { transform: scale(1.1); } }
+        /* 2. Admin Congratulations Overlay */
+        #congrats-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 8000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .congrats-card { background: white; padding: 30px; border-radius: 15px; width: 80%; text-align: center; animation: popUp 0.4s ease; }
+        .admin-img { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--fb-blue); margin-bottom: 15px; object-fit: cover; }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* ৩. অভিনন্দন পপ-আপ (আপনার ছবিসহ) */
-        #congrats-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 7000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-        .congrats-card { background: white; padding: 30px; border-radius: 20px; width: 80%; text-align: center; animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .admin-img { width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--fb-blue); margin-bottom: 15px; object-fit: cover; }
-        @keyframes popUp { from { transform: scale(0.5); } to { transform: scale(1); } }
+        /* 3. Facebook Auth UI */
+        .auth-box { padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 30px; }
+        .fb-logo { color: var(--fb-blue); font-size: 45px; font-weight: bold; letter-spacing: -2px; margin-bottom: 10px; }
+        .fb-input-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 90%; display: flex; flex-direction: column; gap: 12px; }
+        input, textarea { padding: 14px; border: 1px solid #dddfe2; border-radius: 6px; font-size: 16px; outline: none; background: #f5f6f7; }
+        .btn-blue { background: var(--fb-blue); color: white; padding: 12px; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-green { background: var(--fb-green); color: white; padding: 10px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 60%; align-self: center; }
 
-        /* Auth UI */
-        .auth-card { padding: 30px; display: flex; flex-direction: column; gap: 15px; height: 100%; justify-content: center; text-align: center; }
-        .input-group { position: relative; display: flex; align-items: center; }
-        .input-group span { position: absolute; left: 15px; color: #666; }
-        input { width: 100%; padding: 15px 15px 15px 45px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
-        .btn-premium { background: var(--fb-blue); color: white; padding: 16px; border: none; border-radius: 10px; font-weight: bold; font-size: 18px; cursor: pointer; }
+        /* 4. Inside Home Interface (Facebook Feed Style) */
+        header { background: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
+        .feed-container { flex: 1; overflow-y: auto; background: var(--fb-bg); padding-bottom: 60px; }
+        .post-creator { background: white; padding: 15px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .post-card { background: white; margin-bottom: 10px; padding: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .avatar-small { width: 40px; height: 40px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--fb-blue); }
+        .post-actions { display: flex; border-top: 1px solid #eee; margin-top: 10px; padding-top: 10px; }
+        .action-btn { flex: 1; text-align: center; color: var(--text-gray); font-weight: 600; font-size: 14px; cursor: pointer; }
 
-        /* UI */
-        header { background: var(--fb-blue); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .content-area { flex: 1; overflow-y: auto; background: #f0f2f5; }
-        .profile-hq { background: white; margin: 15px; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        nav { position: absolute; bottom: 0; width: 100%; background: white; border-top: 1px solid #ddd; display: flex; height: 55px; }
+        .nav-item { flex: 1; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; color: var(--text-gray); }
+        .active { color: var(--fb-blue); border-bottom: 3px solid var(--fb-blue); }
+
+        #reg-page { display: none; padding: 20px; background: white; position: absolute; inset: 0; z-index: 1000; overflow-y: auto; }
     </style>
 </head>
 <body>
 
 <div id="app-container">
-    <div id="lang-screen">
-        <h2 style="color: var(--fb-blue)">Select Language</h2>
-        <div id="google_translate_element" style="margin-bottom: 20px;"></div>
-        <button class="lang-btn" onclick="closeLang()">Continue in Selected Language</button>
-    </div>
-
-    <div id="splash">
-        <img src="https://mrahmedkaiyum.github.io/KBOOK/logo.png" class="logo-img" onerror="this.src='https://via.placeholder.com/100/FFFFFF/075e54?text=K'">
-        <h2 style="color: white; margin-top: 15px;">KBOOK PRO</h2>
+    <div id="lang-overlay">
+        <div class="lang-card">
+            <h1 style="color:var(--fb-blue); margin:0;">kbook</h1>
+            <p>Select your language to continue</p>
+            <div id="google_translate_element" style="margin: 15px 0;"></div>
+            <button class="btn-blue" style="width:100%" onclick="closeLang()">Continue</button>
+        </div>
     </div>
 
     <div id="congrats-overlay">
         <div class="congrats-card">
-            <img src="https://mrahmedkaiyum.github.io/KBOOK/admin.jpg" class="admin-img" onerror="this.src='https://via.placeholder.com/120/075e54/FFFFFF?text=Admin'">
-            <h2 style="color: var(--fb-blue); margin: 0;">Congratulations!</h2>
-            <p id="welcome-msg">Welcome to our community. Your account is now verified.</p>
-            <button class="btn-premium" style="width: 100%;" onclick="enterApp()">OK / Let's Start</button>
+            <img src="https://mrahmedkaiyum.github.io/KBOOK/admin.jpg" class="admin-img" onerror="this.src='https://via.placeholder.com/110/1877f2/FFFFFF?text=Admin'">
+            <h2 style="color:var(--fb-blue); margin:0;">Verified!</h2>
+            <p style="color:var(--text-gray);">Congratulations! Your account is now active and secure.</p>
+            <button class="btn-blue" style="width:100%" onclick="goToHome()">Go to Home</button>
         </div>
     </div>
 
-    <div id="auth-page" class="auth-card">
-        <h1 style="color: var(--fb-blue); font-size: 45px;">KBOOK</h1>
-        
-        <div class="input-group">
-            <span>👤</span>
-            <input type="text" id="u-id" placeholder="Username / Email / Mobile">
+    <div id="login-page" class="auth-box">
+        <div class="fb-logo">kbook</div>
+        <div class="fb-input-card">
+            <input type="text" placeholder="Mobile number or email" id="l-id">
+            <input type="password" placeholder="Password" id="l-pass">
+            <button class="btn-blue" onclick="dummyLogin()">Log In</button>
+            <a href="#" style="text-decoration:none; color:var(--fb-blue); font-size:14px; text-align:center;">Forgotten password?</a>
+            <hr style="border:0.5px solid #dddfe2; margin:10px 0;">
+            <button class="btn-green" onclick="showReg()">Create New Account</button>
         </div>
-        <div class="input-group">
-            <span>🔒</span>
-            <input type="password" id="u-pass" placeholder="Password (6+ digits)">
-        </div>
-        
-        <button class="btn-premium" onclick="processRegistration()">Join KBOOK Pro</button>
-        <p style="font-size: 13px; color: #666;">By joining, you agree to our <b>Global Terms</b>.</p>
     </div>
 
-    <div id="main-app" style="display:none; flex-direction: column; height: 100%;">
+    <div id="reg-page">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0;">Sign Up</h2>
+            <span onclick="hideReg()" style="font-size:30px; cursor:pointer;">&times;</span>
+        </div>
+        <p style="color:var(--text-gray); font-size:14px; margin:5px 0 20px 0;">It's quick and easy.</p>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; gap:10px;">
+                <input type="text" placeholder="First name" id="r-fname" style="flex:1">
+                <input type="text" placeholder="Surname" id="r-lname" style="flex:1">
+            </div>
+            <input type="text" placeholder="Address (City, Country)" id="r-address">
+            <input type="text" placeholder="Mobile number or email" id="r-contact">
+            <input type="password" placeholder="New password" id="r-pass">
+            
+            <div style="background:#eee; padding:10px; text-align:center; font-weight:bold; letter-spacing:4px; border-radius:5px;" id="cap-box">R7T9P</div>
+            <input type="text" placeholder="Enter captcha above" id="cap-input">
+            
+            <button class="btn-green" style="width:100%; margin-top:10px;" onclick="handleReg()">Sign Up</button>
+        </div>
+    </div>
+
+    <div id="home-page" style="display:none; flex-direction:column; height:100%;">
         <header>
-            <span>KBOOK PRO</span>
-            <div onclick="location.reload()" style="font-size: 12px; cursor: pointer;">Logout</div>
+            <span style="color:var(--fb-blue); font-size:24px; font-weight:bold;">kbook</span>
+            <div style="display:flex; gap:15px;">
+                <span onclick="location.reload()" style="font-size:18px; cursor:pointer;">🔍</span>
+                <span onclick="location.reload()" style="font-size:18px; cursor:pointer;">Logout</span>
+            </div>
         </header>
-        <div class="content-area">
-            <div class="profile-hq">
-                <div style="font-size: 50px;">👑</div>
-                <h2 id="display-name">Username</h2>
-                <p style="color: #65676b;">KBOOK Official Member</p>
-                <hr>
-                <button class="btn-premium" style="width: 100%;">Create First Post</button>
+
+        <div class="feed-container">
+            <div class="post-creator">
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <div class="avatar-small" id="user-initial">U</div>
+                    <input type="text" placeholder="What's on your mind?" id="post-text" style="flex:1; border-radius:20px; background:#f0f2f5;">
+                </div>
+                <button class="btn-blue" style="font-size:14px; padding:8px;" onclick="createPost()">Post</button>
+            </div>
+
+            <div id="news-feed">
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="avatar-small">A</div>
+                        <div><b>Admin</b><br><small style="color:var(--text-gray)">Just now • Global</small></div>
+                    </div>
+                    <p>Welcome to the new KBOOK! Start posting and connect with the world.</p>
+                    <div class="post-actions">
+                        <div class="action-btn" onclick="alert('Liked!')">👍 Like</div>
+                        <div class="action-btn" onclick="alert('Comment box opening...')">💬 Comment</div>
+                        <div class="action-btn">🔄 Share</div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <nav>
+            <div class="nav-item active">🏠</div>
+            <div class="nav-item">👥</div>
+            <div class="nav-item">💬</div>
+            <div class="nav-item">🔔</div>
+            <div class="nav-item">☰</div>
+        </nav>
     </div>
 </div>
 
@@ -101,35 +151,58 @@
         new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
     }
 
-    function closeLang() {
-        document.getElementById('lang-screen').style.display = 'none';
-        document.getElementById('splash').style.display = 'flex';
-        setTimeout(() => {
-            document.getElementById('splash').style.display = 'none';
-        }, 2500);
+    function closeLang() { document.getElementById('lang-overlay').style.display = 'none'; }
+    function showReg() { 
+        document.getElementById('reg-page').style.display = 'block'; 
+        const code = Math.random().toString(36).substring(2, 7).toUpperCase();
+        document.getElementById('cap-box').innerText = code;
     }
+    function hideReg() { document.getElementById('reg-page').style.display = 'none'; }
 
-    function processRegistration() {
-        const id = document.getElementById('u-id').value;
-        const pass = document.getElementById('u-pass').value;
+    function handleReg() {
+        const name = document.getElementById('r-fname').value;
+        const pass = document.getElementById('r-pass').value;
+        const capIn = document.getElementById('cap-input').value.toUpperCase();
+        const capReal = document.getElementById('cap-box').innerText;
 
-        if(!id || pass.length < 6) {
-            alert("Please fill all details! Password must be 6+ characters.");
-            return;
-        }
+        if(!name || pass.length < 6) return alert("Fill all details! Pass must be 6+ chars.");
+        if(capIn !== capReal) return alert("Captcha failed!");
 
-        // টুক শব্দ বাজানো
         document.getElementById('tuk-sound').play();
-
-        // অভিনন্দন স্ক্রিন দেখানো
         document.getElementById('congrats-overlay').style.display = 'flex';
-        document.getElementById('display-name').innerText = id.split('@')[0];
+        document.getElementById('user-initial').innerText = name[0].toUpperCase();
     }
 
-    function enterApp() {
+    function goToHome() {
         document.getElementById('congrats-overlay').style.display = 'none';
-        document.getElementById('auth-page').style.display = 'none';
-        document.getElementById('main-app').style.display = 'flex';
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('reg-page').style.display = 'none';
+        document.getElementById('home-page').style.display = 'flex';
+    }
+
+    function dummyLogin() { 
+        document.getElementById('user-initial').innerText = "U";
+        goToHome(); 
+    }
+
+    function createPost() {
+        const txt = document.getElementById('post-text').value;
+        if(!txt) return;
+        const initial = document.getElementById('user-initial').innerText;
+        const postHtml = `
+            <div class="post-card">
+                <div class="post-header">
+                    <div class="avatar-small">${initial}</div>
+                    <div><b>You</b><br><small style="color:var(--text-gray)">Just now</small></div>
+                </div>
+                <p>${txt}</p>
+                <div class="post-actions">
+                    <div class="action-btn">👍 Like</div>
+                    <div class="action-btn">💬 Comment</div>
+                </div>
+            </div>`;
+        document.getElementById('news-feed').insertAdjacentHTML('afterbegin', postHtml);
+        document.getElementById('post-text').value = "";
     }
 </script>
 
