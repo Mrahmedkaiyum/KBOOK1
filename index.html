@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lal Bilai - Advance Messenger</title>
+    <title>Lal Bilai - Fixed Login</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
@@ -11,230 +11,103 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
-        :root { --green: #075E54; --light-green: #25D366; --white: #ffffff; --gray: #f0f2f5; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: #111; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-
-        #app-wrap { width: 100%; max-width: 450px; height: 100vh; background: var(--white); display: flex; flex-direction: column; position: relative; }
-
-        /* Header */
-        header { background: var(--green); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .brand { font-size: 20px; font-weight: bold; }
-
-        /* Search Bar (Persistent like WhatsApp) */
-        .search-container { padding: 10px; background: #fff; border-bottom: 1px solid #ddd; }
-        .search-inner { background: var(--gray); display: flex; align-items: center; padding: 5px 15px; border-radius: 20px; }
-        .search-inner input { border: none; background: transparent; padding: 8px; width: 100%; outline: none; font-size: 14px; }
-
-        /* Main List */
-        #chat-list { flex: 1; overflow-y: auto; }
-        .chat-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f5f5f5; cursor: pointer; }
-        .chat-item img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px; }
-        .chat-info { flex: 1; }
-        .chat-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .chat-name { font-weight: bold; color: #000; }
-        .chat-msg { font-size: 13px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-
-        /* Floating Action Button */
-        .fab { position: absolute; bottom: 30px; right: 20px; width: 55px; height: 55px; background: var(--light-green); border-radius: 50%; 
-               display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; z-index: 100; }
-
-        /* Full Screen Chat Overlay */
-        #chat-window { position: absolute; inset: 0; background: #e5ddd5; z-index: 200; display: none; flex-direction: column; }
-        .chat-header { background: var(--green); color: white; padding: 10px; display: flex; align-items: center; }
-        #message-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 8px 12px; border-radius: 10px; max-width: 75%; font-size: 14px; }
-        .msg.sent { align-self: flex-end; background: #dcf8c6; }
-        .msg.received { align-self: flex-start; background: white; }
-        .input-area { background: #f0f0f0; padding: 10px; display: flex; gap: 10px; }
-        .input-area input { flex: 1; border: none; padding: 10px; border-radius: 20px; outline: none; }
-
-        /* Login Interface */
-        #login-screen { position: absolute; inset: 0; background: white; z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
-        .login-card { width: 100%; text-align: center; }
-        .login-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 25px; outline: none; }
+        :root { --green: #075E54; --light-green: #25D366; --white: #ffffff; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #app-wrap { width: 100%; max-width: 400px; height: 95vh; background: var(--white); border-radius: 15px; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* লগইন ডিজাইন */
+        .login-screen { position: absolute; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .iti { width: 100%; margin-bottom: 15px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
+        .login-btn { width: 100%; padding: 12px; background: var(--green); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        
+        /* চ্যাট ইন্টারফেস */
+        header { background: var(--green); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; }
+        #chat-list { flex: 1; overflow-y: auto; background: #f0f0f0; }
+        .chat-item { padding: 15px; background: white; border-bottom: 1px solid #eee; display: flex; align-items: center; cursor: pointer; }
+        .chat-item img { width: 45px; height: 45px; border-radius: 50%; margin-right: 15px; }
     </style>
 </head>
 <body>
 
 <div id="app-wrap">
-    
-    <div id="login-screen" style="display:none;">
-        <div class="login-card">
-            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" style="width:80px; border-radius:50%;">
-            <h2 style="color:var(--green)">Lal Bilai Login</h2>
-            <input type="tel" id="l-ph">
-            <input type="password" id="l-ps" placeholder="পাসওয়ার্ড">
-            <button class="btn" onclick="handleLogin()" style="width:100%; padding:12px; background:var(--green); color:white; border:none; border-radius:25px; cursor:pointer; font-weight:bold;">লগইন করুন</button>
-            <p onclick="showReg()" style="font-size:12px; margin-top:15px; color:#666; cursor:pointer;">নতুন অ্যাকাউন্ট খুলুন</p>
-        </div>
+    <div id="login-scr" class="login-screen">
+        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" style="width:80px; border-radius:50%; margin-bottom:20px;">
+        <h2 style="margin-bottom:20px; color:var(--green)">Lal Bilai Login</h2>
+        <input type="tel" id="l-ph">
+        <input type="password" id="l-ps" placeholder="পাসওয়ার্ড লিখুন" style="margin-top:10px;">
+        <button class="login-btn" onclick="handleLogin()">Login</button>
+        <p style="font-size:12px; margin-top:15px; color:gray;">অ্যাকাউন্ট না থাকলে অ্যাডমিনকে জানান।</p>
     </div>
 
     <header>
-        <div class="brand">Lal Bilai</div>
-        <div style="font-size:14px; cursor:pointer;" onclick="logout()">Logout</div>
+        <span>Lal Bilai Messenger</span>
+        <span onclick="logout()" style="font-size:12px; cursor:pointer;">Logout</span>
     </header>
-
-    <div class="search-container">
-        <div class="search-inner">
-            <input type="text" id="global-search" oninput="filterChats()" placeholder="মেসেজ বা নাম দিয়ে খুঁজুন...">
-        </div>
-    </div>
-
     <div id="chat-list">
         </div>
-
-    <div class="fab" onclick="findNewUser()">+</div>
-
-    <div id="chat-window">
-        <div class="chat-header">
-            <span onclick="closeChat()" style="margin-right:15px; cursor:pointer;">←</span>
-            <img id="chat-avatar" src="" style="width:35px; height:35px; border-radius:50%; margin-right:10px;">
-            <span id="chat-user-name" style="font-weight:bold;">User</span>
-        </div>
-        <div id="message-box"></div>
-        <div class="input-area">
-            <input type="text" id="msg-input" placeholder="মেসেজ লিখুন...">
-            <button onclick="sendMsg()" style="border:none; background:var(--green); color:white; padding:8px 15px; border-radius:50%; cursor:pointer;">➤</button>
-        </div>
-    </div>
 </div>
 
 <script>
+    // Firebase Initialization
     const firebaseConfig = { databaseURL: "https://kbook-5d175-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    
-    let myPhoneId = localStorage.getItem("lb_phone");
-    let activeChatUser = null;
 
+    let iti;
+    // ইনপুট বক্স সেটআপ
     window.onload = () => {
-        if(!myPhoneId) {
-            document.getElementById('login-screen').style.display = 'flex';
-            initPhoneInput();
-        } else {
-            loadRecentChats();
+        const input = document.querySelector("#l-ph");
+        iti = window.intlTelInput(input, {
+            separateDialCode: true,
+            initialCountry: "sa", // সৌদি আরব ডিফল্ট
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js"
+        });
+
+        // যদি আগে লগইন করা থাকে
+        if(localStorage.getItem("lb_phone")) {
+            document.getElementById('login-scr').style.display = 'none';
+            loadChats();
         }
     };
 
-    // ১. স্মার্ট ফিল্টার ও সার্চ (মেসেজ দিয়ে অ্যাকাউন্ট খুঁজে বের করা)
-    function filterChats() {
-        const query = document.getElementById('global-search').value.toLowerCase();
-        const items = document.querySelectorAll('.chat-item');
-        
-        items.forEach(item => {
-            const name = item.querySelector('.chat-name').innerText.toLowerCase();
-            const lastMsg = item.querySelector('.chat-msg').innerText.toLowerCase();
-            
-            if(name.includes(query) || lastMsg.includes(query)) {
-                item.style.display = 'flex';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    }
-
-    // ২. নতুন রিয়েল পারসন সার্চ
-    function findNewUser() {
-        const num = prompt("যাকে মেসেজ পাঠাতে চান তার ফুল নাম্বার লিখুন (e.g. +88017...):");
-        if(!num) return;
-        
-        const searchKey = btoa(num);
-        db.ref('users/' + searchKey).once('value', snap => {
-            if(snap.exists()) {
-                openChat(searchKey, snap.val().name, snap.val().profilePic);
-            } else {
-                alert("এই নাম্বারে কোনো ইউজার পাওয়া যায়নি!");
-            }
-        });
-    }
-
-    // ৩. মেসেজিং সিস্টেম
-    function openChat(userId, name, pic) {
-        activeChatUser = userId;
-        document.getElementById('chat-window').style.display = 'flex';
-        document.getElementById('chat-user-name').innerText = name;
-        document.getElementById('chat-avatar').src = pic || 'https://via.placeholder.com/50';
-        loadMessages(userId);
-    }
-
-    function loadMessages(targetId) {
-        const chatId = getChatId(myPhoneId, targetId);
-        db.ref('messages/' + chatId).on('value', snap => {
-            const box = document.getElementById('message-box');
-            box.innerHTML = '';
-            snap.forEach(msgSnap => {
-                const m = msgSnap.val();
-                const div = document.createElement('div');
-                div.className = `msg ${m.sender === myPhoneId ? 'sent' : 'received'}`;
-                div.innerText = m.text;
-                box.appendChild(div);
-            });
-            box.scrollTop = box.scrollHeight;
-        });
-    }
-
-    function sendMsg() {
-        const text = document.getElementById('msg-input').value;
-        if(!text || !activeChatUser) return;
-        
-        const chatId = getChatId(myPhoneId, activeChatUser);
-        const msgData = { sender: myPhoneId, text: text, time: Date.now() };
-        
-        db.ref('messages/' + chatId).push(msgData);
-        // রিসেন্ট চ্যাট লিস্ট আপডেট
-        db.ref('recent_chats/' + myPhoneId + '/' + activeChatUser).set(msgData);
-        db.ref('recent_chats/' + activeChatUser + '/' + myPhoneId).set(msgData);
-        
-        document.getElementById('msg-input').value = '';
-    }
-
-    // চ্যাট লিস্ট লোড (WhatsApp স্টাইল)
-    function loadRecentChats() {
-        db.ref('recent_chats/' + myPhoneId).on('value', snap => {
-            const list = document.getElementById('chat-list');
-            list.innerHTML = '';
-            snap.forEach(chatSnap => {
-                const targetId = chatSnap.key;
-                const lastMsg = chatSnap.val().text;
-                
-                db.ref('users/' + targetId).once('value', userSnap => {
-                    const u = userSnap.val();
-                    const div = document.createElement('div');
-                    div.className = 'chat-item';
-                    div.onclick = () => openChat(targetId, u.name, u.profilePic);
-                    div.innerHTML = `
-                        <img src="${u.profilePic || 'https://via.placeholder.com/50'}">
-                        <div class="chat-info">
-                            <div class="chat-top"><span class="chat-name">${u.name}</span></div>
-                            <div class="chat-msg">${lastMsg}</div>
-                        </div>
-                    `;
-                    list.appendChild(div);
-                });
-            });
-        });
-    }
-
-    function getChatId(id1, id2) { return id1 < id2 ? id1 + "_" + id2 : id2 + "_" + id1; }
-    function closeChat() { document.getElementById('chat-window').style.display = 'none'; }
-    function logout() { localStorage.clear(); location.reload(); }
-
-    // লগইন সিস্টেম (আগের লজিক অনুযায়ী ফিক্সড)
+    // ফিক্সড লগইন ফাংশন
     function handleLogin() {
-        const ph = btoa(loginPhone.getNumber());
-        const ps = document.getElementById('l-ps').value;
-        db.ref('users/' + ph).once('value', snap => {
-            if(snap.exists() && snap.val().pass === ps) {
-                localStorage.setItem("lb_phone", ph);
-                location.reload();
-            } else alert("ভুল তথ্য!");
+        const phoneNumber = iti.getNumber(); // কান্ট্রি কোডসহ ফুল নাম্বার নেয়
+        const password = document.getElementById('l-ps').value;
+
+        if(!phoneNumber || !password) {
+            alert("নাম্বার এবং পাসওয়ার্ড দিন!");
+            return;
+        }
+
+        const userKey = btoa(phoneNumber); // নাম্বারকে আইডি হিসেবে ব্যবহার
+
+        db.ref('users/' + userKey).once('value', snap => {
+            const userData = snap.val();
+            if(userData) {
+                if(userData.pass === password) {
+                    localStorage.setItem("lb_phone", userKey);
+                    alert("লগইন সফল!");
+                    location.reload(); // পেজ রিলোড দিয়ে অ্যাপে ঢুকবে
+                } else {
+                    alert("ভুল পাসওয়ার্ড!");
+                }
+            } else {
+                alert("এই নাম্বারে কোনো অ্যাকাউন্ট পাওয়া যায়নি!");
+            }
         });
     }
 
-    let loginPhone;
-    function initPhoneInput() {
-        loginPhone = window.intlTelInput(document.querySelector("#l-ph"), { separateDialCode: true, initialCountry: "sa" });
+    function loadChats() {
+        // চ্যাট লিস্ট লোড করার লজিক এখানে থাকবে
+        console.log("Logged in as: " + atob(localStorage.getItem("lb_phone")));
+    }
+
+    function logout() {
+        localStorage.clear();
+        location.reload();
     }
 </script>
 </body>
