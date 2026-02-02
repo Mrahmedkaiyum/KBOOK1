@@ -1,114 +1,129 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lal Bilai - Fixed Login</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KBOOK - Unique Experience</title>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <style>
-        :root { --green: #075E54; --light-green: #25D366; --white: #ffffff; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #app-wrap { width: 100%; max-width: 400px; height: 95vh; background: var(--white); border-radius: 15px; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        :root { 
+            --leaf-green: #4CAF50; 
+            --light-yellow: #FFF9C4; 
+            --white: #ffffff; 
+            --soft-bg: #fdfdfd; 
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--soft-bg); overflow: hidden; }
+        #app-wrap { width: 100%; max-width: 500px; margin: 0 auto; height: 100vh; background: var(--white); position: relative; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.05); }
+
+        /* ১. এন্ট্রি অ্যানিমেশন */
+        #splash { position: absolute; inset: 0; background: var(--white); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeOut 2.5s forwards; }
+        .k-logo { width: 80px; height: 80px; background: var(--leaf-green); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes fadeOut { 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+
+        /* ২. ইউনিক কালার ইন্টারফেস */
+        header { background: var(--light-yellow); padding: 15px; border-bottom: 2px solid var(--leaf-green); display: flex; justify-content: space-between; align-items: center; color: var(--leaf-green); font-weight: bold; font-size: 22px; }
         
-        /* লগইন ডিজাইন */
-        .login-screen { position: absolute; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .iti { width: 100%; margin-bottom: 15px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
-        .login-btn { width: 100%; padding: 12px; background: var(--green); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .nav-tabs { display: flex; background: var(--white); border-bottom: 1px solid #eee; height: 55px; }
+        .tab { flex: 1; display: flex; justify-content: center; align-items: center; font-size: 22px; cursor: pointer; color: #888; transition: 0.3s; }
+        .tab.active { color: var(--leaf-green); border-bottom: 3px solid var(--leaf-green); background: var(--light-yellow); }
+
+        /* ৩. কন্টেন্ট এরিয়া */
+        .main-content { flex: 1; overflow-y: auto; padding-bottom: 70px; }
+        .post-card { background: white; margin: 10px; padding: 15px; border-radius: 12px; border-left: 5px solid var(--leaf-green); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         
-        /* চ্যাট ইন্টারফেস */
-        header { background: var(--green); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; }
-        #chat-list { flex: 1; overflow-y: auto; background: #f0f0f0; }
-        .chat-item { padding: 15px; background: white; border-bottom: 1px solid #eee; display: flex; align-items: center; cursor: pointer; }
-        .chat-item img { width: 45px; height: 45px; border-radius: 50%; margin-right: 15px; }
+        /* ৪. K-Assist (সহকারী সিস্টেম) */
+        #k-assist-box { position: fixed; bottom: 80px; right: 20px; width: 60px; height: 60px; background: var(--leaf-green); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: bold; z-index: 1000; }
+
+        /* ৫. রেজিস্ট্রেশন ও লগইন পেজ */
+        .auth-screen { padding: 30px; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center; background: var(--light-yellow); }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid var(--leaf-green); border-radius: 10px; font-size: 16px; outline: none; box-sizing: border-box; }
+        .btn-unique { background: var(--leaf-green); color: white; padding: 15px; border: none; border-radius: 10px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; }
+
+        /* সার্চ বার */
+        .search-area { padding: 10px; background: var(--white); }
+        .search-input { background: #f9f9f9; border: 1px solid #eee; padding: 10px; border-radius: 20px; width: 90%; }
     </style>
 </head>
 <body>
 
 <div id="app-wrap">
-    <div id="login-scr" class="login-screen">
-        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" style="width:80px; border-radius:50%; margin-bottom:20px;">
-        <h2 style="margin-bottom:20px; color:var(--green)">Lal Bilai Login</h2>
-        <input type="tel" id="l-ph">
-        <input type="password" id="l-ps" placeholder="পাসওয়ার্ড লিখুন" style="margin-top:10px;">
-        <button class="login-btn" onclick="handleLogin()">Login</button>
-        <p style="font-size:12px; margin-top:15px; color:gray;">অ্যাকাউন্ট না থাকলে অ্যাডমিনকে জানান।</p>
+    <div id="splash">
+        <div class="k-logo">K</div>
+        <p style="color: var(--leaf-green); font-weight: bold; margin-top: 15px;">Experience the New Way</p>
     </div>
 
-    <header>
-        <span>Lal Bilai Messenger</span>
-        <span onclick="logout()" style="font-size:12px; cursor:pointer;">Logout</span>
-    </header>
-    <div id="chat-list">
+    <div id="lang-bar" style="text-align: right; padding: 5px; background: #fff; font-size: 12px;">
+        <div id="google_translate_element"></div>
+    </div>
+
+    <div id="auth-page" class="auth-screen">
+        <h1 style="color: var(--leaf-green); font-size: 50px; margin: 0;">kbook</h1>
+        <p style="color: #666;">Unique. Simple. Green.</p>
+        <div id="auth-forms">
+            <input type="text" id="user-id" placeholder="Username / Phone">
+            <input type="password" id="user-pass" placeholder="Password">
+            <button class="btn-unique" onclick="enterApp()">Explore Now</button>
         </div>
+        <p style="margin-top: 20px; font-size: 14px;">Don't have an account? <b style="color:var(--leaf-green); cursor:pointer;">Register</b></p>
+    </div>
+
+    <div id="main-app" style="display:none; flex-direction: column; height: 100%;">
+        <header>
+            <span>kbook</span>
+            <div style="font-size: 16px; cursor: pointer;" onclick="location.reload()">Logout</div>
+        </header>
+
+        <div class="search-area">
+            <input type="text" class="search-input" placeholder="🔍 Search people or info...">
+        </div>
+
+        <div class="nav-tabs">
+            <div class="tab active" onclick="changeTab(this, 'feed')">🏠</div>
+            <div class="tab" onclick="changeTab(this, 'video')">🎞️</div>
+            <div class="tab" onclick="changeTab(this, 'chat')">💬</div>
+            <div class="tab" onclick="changeTab(this, 'profile')">👤</div>
+        </div>
+
+        <div class="main-content" id="feed-area">
+            <div class="post-card">
+                <b>Welcome Admin</b>
+                <p>Welcome to KBOOK Global. Share information securely with our leaf-themed system.</p>
+            </div>
+            <div id="user-posts"></div>
+        </div>
+
+        <div id="k-assist-box" onclick="askKAssist()">K</div>
+    </div>
 </div>
 
 <script>
-    // Firebase Initialization
-    const firebaseConfig = { databaseURL: "https://kbook-5d175-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let iti;
-    // ইনপুট বক্স সেটআপ
-    window.onload = () => {
-        const input = document.querySelector("#l-ph");
-        iti = window.intlTelInput(input, {
-            separateDialCode: true,
-            initialCountry: "sa", // সৌদি আরব ডিফল্ট
-            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js"
-        });
-
-        // যদি আগে লগইন করা থাকে
-        if(localStorage.getItem("lb_phone")) {
-            document.getElementById('login-scr').style.display = 'none';
-            loadChats();
-        }
-    };
-
-    // ফিক্সড লগইন ফাংশন
-    function handleLogin() {
-        const phoneNumber = iti.getNumber(); // কান্ট্রি কোডসহ ফুল নাম্বার নেয়
-        const password = document.getElementById('l-ps').value;
-
-        if(!phoneNumber || !password) {
-            alert("নাম্বার এবং পাসওয়ার্ড দিন!");
-            return;
-        }
-
-        const userKey = btoa(phoneNumber); // নাম্বারকে আইডি হিসেবে ব্যবহার
-
-        db.ref('users/' + userKey).once('value', snap => {
-            const userData = snap.val();
-            if(userData) {
-                if(userData.pass === password) {
-                    localStorage.setItem("lb_phone", userKey);
-                    alert("লগইন সফল!");
-                    location.reload(); // পেজ রিলোড দিয়ে অ্যাপে ঢুকবে
-                } else {
-                    alert("ভুল পাসওয়ার্ড!");
-                }
-            } else {
-                alert("এই নাম্বারে কোনো অ্যাকাউন্ট পাওয়া যায়নি!");
-            }
-        });
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
     }
 
-    function loadChats() {
-        // চ্যাট লিস্ট লোড করার লজিক এখানে থাকবে
-        console.log("Logged in as: " + atob(localStorage.getItem("lb_phone")));
+    function enterApp() {
+        const id = document.getElementById('user-id').value;
+        if(!id) return alert("Please enter your ID");
+        
+        document.getElementById('auth-page').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
     }
 
-    function logout() {
-        localStorage.clear();
-        location.reload();
+    function changeTab(element, tabId) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+        // ভবিষ্যতে এখানে বিভিন্ন ট্যাব কন্টেন্ট লোড করা যাবে
     }
+
+    function askKAssist() {
+        alert("K-Assist: Hello! How can I help you today? You can ask me about account settings or app features.");
+    }
+
+    // টাইম এবং অনলাইন সিস্টেমের জন্য সিম্পল লজিক
+    console.log("System Online: " + new Date().toLocaleTimeString());
 </script>
+
 </body>
 </html>
