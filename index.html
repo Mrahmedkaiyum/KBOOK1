@@ -1,187 +1,122 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KBOOK - Kesenger Pro Max Online</title>
+    <title>KBOOK - K-Assist Home</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
-        :root { --leaf: #2E7D32; --light: #FFF9C4; --white: #ffffff; --chat-bg: #e5ddd5; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #f0f2f5; overflow: hidden; }
-        #app-wrap { width: 100%; max-width: 500px; margin: 0 auto; height: 100vh; background: var(--white); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.2); }
-
-        /* Splash Animation */
-        #splash { position: absolute; inset: 0; background: var(--white); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeOut 2.5s forwards; }
-        .k-logo { width: 80px; height: 80px; background: var(--leaf); border-radius: 20px; color: white; display: flex; align-items: center; justify-content: center; font-size: 45px; font-weight: bold; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% {transform: scale(1);} 50% {transform: scale(1.1);} }
-        @keyframes fadeOut { 80% {opacity: 1;} 100% {opacity: 0; visibility: hidden;} }
+        :root { --leaf: #2E7D32; --light: #f1f8e9; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #e8f5e9; }
+        #app-wrap { width: 100%; max-width: 500px; margin: 0 auto; height: 100vh; background: var(--white); display: flex; flex-direction: column; position: relative; }
 
         /* Auth Screen */
-        .auth-screen { padding: 40px 20px; background: var(--light); height: 100%; display: flex; flex-direction: column; justify-content: center; text-align: center; }
-        input { padding: 15px; margin: 10px 0; border: 1.5px solid var(--leaf); border-radius: 25px; outline: none; font-size: 16px; }
-        .btn-join { background: var(--leaf); color: white; padding: 15px; border: none; border-radius: 25px; font-weight: bold; font-size: 18px; cursor: pointer; transition: 0.3s; }
+        .auth-screen { padding: 30px; background: var(--light); height: 100%; display: flex; flex-direction: column; justify-content: center; text-align: center; position: absolute; width: 100%; box-sizing: border-box; z-index: 2000; }
+        input { padding: 15px; margin: 8px 0; border: 1.5px solid #A5D6A7; border-radius: 12px; outline: none; }
+        .btn-main { background: var(--leaf); color: white; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
-        /* Header & Tabs */
-        header { background: var(--white); padding: 15px; border-bottom: 2px solid var(--leaf); display: flex; justify-content: space-between; align-items: center; color: var(--leaf); font-weight: bold; font-size: 22px; }
-        .tabs { display: flex; border-bottom: 1px solid #ddd; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-size: 20px; color: #888; }
-        .tab.active { color: var(--leaf); border-bottom: 3px solid var(--leaf); background: var(--light); }
+        /* Header */
+        header { background: var(--leaf); padding: 15px; color: white; text-align: center; font-size: 20px; font-weight: bold; }
 
-        /* Chat Area */
-        #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: var(--chat-bg); }
-        .msg { padding: 10px 14px; border-radius: 15px; max-width: 80%; font-size: 15px; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .msg-in { background: white; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .msg-out { background: #dcf8c6; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .msg img, .msg video { max-width: 100%; border-radius: 8px; margin-top: 5px; }
-        .s-name { font-size: 11px; font-weight: bold; color: var(--leaf); display: block; margin-bottom: 3px; }
+        /* Home Page (AI Assist) */
+        #home-sec { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #f9fdf9; }
+        #assist-chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        
+        .ai-msg { background: #e0f2f1; padding: 12px; border-radius: 15px 15px 15px 0; align-self: flex-start; max-width: 85%; font-size: 15px; border: 1px solid #b2dfdb; line-height: 1.5; }
+        .user-msg { background: var(--leaf); color: white; padding: 12px; border-radius: 15px 15px 0 15px; align-self: flex-end; max-width: 85%; font-size: 15px; }
 
-        /* Controls */
-        .controls { padding: 10px; background: white; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd; }
-        .icon { font-size: 24px; cursor: pointer; color: var(--leaf); }
-        #m-input { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 20px; outline: none; background: #f0f2f5; }
+        /* Bottom Menu */
+        .nav-bar { display: flex; background: white; border-top: 1px solid #ddd; padding: 10px 0; }
+        .nav-item { flex: 1; text-align: center; font-size: 24px; cursor: pointer; color: #666; }
+        .nav-item.active { color: var(--leaf); }
 
-        /* K-Assist Bubble */
-        #k-bubble { position: fixed; bottom: 85px; right: 20px; background: var(--leaf); color: white; padding: 10px 15px; border-radius: 20px 20px 0 20px; font-size: 13px; display: none; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        /* Input Area */
+        .input-area { padding: 10px; display: flex; gap: 10px; background: white; border-top: 1px solid #eee; }
+        .input-area input { flex: 1; border-radius: 25px; padding: 10px 15px; border: 1px solid #ddd; margin: 0; }
     </style>
 </head>
 <body>
 
 <div id="app-wrap">
-    <div id="splash"><div class="k-logo">K</div><h2 style="color:var(--leaf)">KBOOK GLOBAL</h2></div>
-
     <div id="auth-page" class="auth-screen">
-        <h1 style="color:var(--leaf); font-size: 40px; margin: 0;">kbook</h1>
-        <p>Your Leafy Social Space</p>
-        <input type="text" id="user-name" placeholder="Enter Your Name">
-        <button class="btn-join" onclick="startApp()">Enter Online</button>
+        <h1 style="color:var(--leaf)">KBOOK</h1>
+        <p>আপনার অ্যাকাউন্ট দিয়ে লগইন করুন</p>
+        <input type="text" id="u-id" placeholder="মোবাইল বা ইমেইল">
+        <input type="password" id="u-pass" placeholder="পাসওয়ার্ড">
+        <button class="btn-main" onclick="login()">প্রবেশ করুন</button>
     </div>
 
     <div id="main-app" style="display:none; flex-direction:column; height:100%;">
-        <header><span>kbook</span> <span onclick="kAssistVoice()">🤖</span></header>
-        <div class="tabs">
-            <div class="tab active" onclick="switchSection('feed')">🏠</div>
-            <div class="tab" onclick="switchSection('chat')">💬</div>
-            <div class="tab">👤</div>
-        </div>
-
-        <div id="feed-sec" style="flex:1; overflow-y:auto; padding:15px;">
-            <div style="background:white; padding:15px; border-left:5px solid var(--leaf);">
-                <b>Global Satellite Status:</b> <span style="color:green;">Online</span>
-                <p>Welcome to KBOOK. Everything you share is now real-time.</p>
+        <header>K-Assist সাহায্য কেন্দ্র</header>
+        
+        <div id="home-sec">
+            <div id="assist-chat-box">
+                <div class="ai-msg">নমস্কার! আমি K-Assist। আমি আপনাকে কীভাবে সাহায্য করতে পারি? আপনি আমাকে বাংলায় যেকোনো প্রশ্ন করতে পারেন।</div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" id="ai-input" placeholder="এখানে কিছু লিখুন...">
+                <button class="btn-main" style="padding: 10px 20px; margin: 0;" onclick="askAI()">পাঠান</button>
             </div>
         </div>
 
-        <div id="chat-sec" style="display:none; flex-direction:column; height:100%;">
-            <div id="chat-box"></div>
-            <div class="controls">
-                <label for="f-in" class="icon">🖼️</label>
-                <input type="file" id="f-in" style="display:none" accept="image/*,video/*" onchange="uploadMedia(this)">
-                <span class="icon" onclick="sendLoc()">📍</span>
-                <input type="text" id="m-input" placeholder="Type a message...">
-                <span class="icon" id="mic" onclick="toggleMic()">🎤</span>
-                <span class="icon" onclick="sendTxt()">🚀</span>
-            </div>
+        <div class="nav-bar">
+            <div class="nav-item active">🏠</div>
+            <div class="nav-item" onclick="alert('মেসেঞ্জার লোড হচ্ছে...')">💬</div>
+            <div class="nav-item">👤</div>
         </div>
     </div>
-
-    <div id="k-bubble"></div>
 </div>
 
 <script>
-    // --- 1. FIREBASE SETUP ---
+    // Firebase Config
     const firebaseConfig = { databaseURL: "https://kbook-5d175-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     let myName = "";
 
-    // --- 2. AUTH & START ---
-    function startApp() {
-        myName = document.getElementById('user-name').value;
-        if(!myName) return alert("Please enter your name!");
+    function login() {
+        myName = document.getElementById('u-id').value;
+        if(!myName) return alert("দয়া করে নাম দিন");
         document.getElementById('auth-page').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
-        initKAssist();
-        listenMessages();
     }
 
-    // --- 3. K-ASSIST (Voice & Assist) ---
-    function initKAssist() {
-        const bubble = document.getElementById('k-bubble');
-        bubble.innerText = `Welcome ${myName}! I am K-Assist. Everything is live!`;
-        bubble.style.display = 'block';
-        setTimeout(() => bubble.style.display = 'none', 5000);
-    }
+    // K-Assist AI Logic (Smart Response)
+    function askAI() {
+        const input = document.getElementById('ai-input');
+        const box = document.getElementById('assist-chat-box');
+        const query = input.value.trim();
+        
+        if(!query) return;
 
-    function kAssistVoice() {
-        const msg = new SpeechSynthesisUtterance(`Hello ${myName}, I am K-Assist. I am monitoring your satellite connection. You are now online.`);
-        window.speechSynthesis.speak(msg);
-    }
+        // ইউজারের মেসেজ দেখানো
+        box.innerHTML += `<div class="user-msg">${query}</div>`;
+        input.value = "";
 
-    // --- 4. CHAT FUNCTIONS ---
-    function switchSection(sec) {
-        document.getElementById('feed-sec').style.display = (sec==='feed'?'block':'none');
-        document.getElementById('chat-sec').style.display = (sec==='chat'?'flex':'none');
-    }
+        // সিস্টেমের উত্তর লজিক
+        setTimeout(() => {
+            let response = "";
+            
+            if(query.includes("কেমন আছ")) {
+                response = "আমি ভালো আছি! আপনাকে সাহায্য করার জন্য আমি সবসময় প্রস্তুত।";
+            } else if(query.includes("তুমি কে") || query.includes("পরিচয়")) {
+                response = "আমি KBOOK এর স্মার্ট অ্যাসিস্ট্যান্ট। আমি আপনার মেসেজ আদান-প্রদান এবং অ্যাপ ব্যবহার করতে সাহায্য করি।";
+            } else if(query.includes("কিভাবে") || query.includes("কাজ করে")) {
+                response = "আপনি মেসেজ অপশনে গিয়ে বন্ধুদের সাথে চ্যাট করতে পারেন এবং গ্যালারি থেকে ছবি পাঠাতে পারেন।";
+            } else if(query.includes("ধন্যবাদ")) {
+                response = "আপনাকেও অনেক ধন্যবাদ! KBOOK এর সাথে থাকুন।";
+            } else {
+                response = "আপনার প্রশ্নটি চমৎকার! আমি এটি নিয়ে ভাবছি। আপনি কি অ্যাপের চ্যাট বা প্রোফাইল নিয়ে কিছু জানতে চান?";
+            }
 
-    function sendTxt() {
-        const val = document.getElementById('m-input').value;
-        if(!val) return;
-        db.ref('messages').push({ sender: myName, content: val, type: 'text', time: Date.now() });
-        document.getElementById('m-input').value = "";
-    }
-
-    function uploadMedia(input) {
-        const file = input.files[0];
-        if(!file || file.size > 2000000) return alert("File too large (Max 2MB)");
-        const reader = new FileReader();
-        reader.onload = e => db.ref('messages').push({ sender: myName, content: e.target.result, type: file.type.startsWith('image')?'image':'video', time: Date.now() });
-        reader.readAsDataURL(file);
-    }
-
-    function sendLoc() {
-        navigator.geolocation.getCurrentPosition(pos => {
-            const url = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-            db.ref('messages').push({ sender: myName, content: url, type: 'loc', time: Date.now() });
-        });
-    }
-
-    let rec; let chunks = [];
-    function toggleMic() {
-        const micBtn = document.getElementById('mic');
-        if(!rec || rec.state === 'inactive') {
-            navigator.mediaDevices.getUserMedia({audio:true}).then(s => {
-                rec = new MediaRecorder(s); rec.start(); micBtn.innerText = "🛑";
-                rec.ondataavailable = e => chunks.push(e.data);
-                rec.onstop = () => {
-                    const reader = new FileReader();
-                    reader.onload = e => db.ref('messages').push({ sender: myName, content: e.target.result, type: 'audio', time: Date.now() });
-                    reader.readAsDataURL(new Blob(chunks)); chunks = []; micBtn.innerText = "🎤";
-                };
-            });
-        } else { rec.stop(); }
-    }
-
-    function listenMessages() {
-        db.ref('messages').limitToLast(30).on('value', snap => {
-            const box = document.getElementById('chat-box');
-            box.innerHTML = "";
-            snap.forEach(c => {
-                const d = c.val();
-                const side = d.sender === myName ? 'msg-out' : 'msg-in';
-                let html = `<span class="s-name">${d.sender}</span>`;
-                if(d.type==='text') html += d.content;
-                else if(d.type==='image') html += `<img src="${d.content}">`;
-                else if(d.type==='video') html += `<video controls src="${d.content}"></video>`;
-                else if(d.type==='audio') html += `<audio controls src="${d.content}"></audio>`;
-                else if(d.type==='loc') html += `📍 <a href="${d.content}" target="_blank">View My Location</a>`;
-                box.innerHTML += `<div class="msg ${side}">${html}</div>`;
-            });
+            box.innerHTML += `<div class="ai-msg">${response}</div>`;
             box.scrollTop = box.scrollHeight;
-        });
+        }, 1000);
     }
 </script>
 
