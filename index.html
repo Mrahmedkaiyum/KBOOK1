@@ -3,35 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>লাল বিলাই চ্যাট - Final Pro</title>
+    <title>লাল বিলাই - Name Sync Pro</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --red: #D32F2F; --green: #25D366; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: #1a1a1a; height: 100vh; display: flex; justify-content: center; align-items: center; }
-        #app-wrap { width: 350px; height: 92vh; background: #fff; border-radius: 30px; overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        :root { --red: #D32F2F; --bg: #fdfdfd; --green: #25D366; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: #121212; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        #app-wrap { width: 350px; height: 90vh; background: var(--bg); border-radius: 30px; overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: 0 25px 50px rgba(0,0,0,0.5); border: 3px solid #333; }
         .screen { padding: 30px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; position: absolute; inset: 0; background: #fff; z-index: 5; display: none; }
-        .logo { width: 85px; height: 85px; border-radius: 50%; border: 3px solid var(--red); margin-bottom: 20px; object-fit: cover; }
-        input { width: 100%; padding: 13px; margin: 10px 0; border: 1.5px solid #eee; border-radius: 25px; outline: none; text-align: center; font-size: 15px; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 25px; background: var(--red); color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        .wa-btn { background: var(--green); color: white; text-decoration: none; display: block; width: 100%; padding: 14px; border-radius: 25px; font-weight: bold; margin: 15px 0; }
+        .logo { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--red); margin-bottom: 15px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 25px; outline: none; text-align: center; font-size: 15px; }
+        .btn { width: 100%; padding: 13px; border: none; border-radius: 25px; background: var(--red); color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
         header { background: var(--red); color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; }
-        .u-img { width: 38px; height: 38px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; }
-        #chat-list { flex: 1; overflow-y: auto; }
-        .c-row { padding: 12px 18px; border-bottom: 1px solid #f5f5f5; display: flex; align-items: center; cursor: pointer; }
-        .img-box { position: relative; width: 45px; height: 45px; margin-right: 15px; }
-        .img-box img { width: 100%; height: 100%; border-radius: 50%; }
-        .dot { position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; background: #ccc; }
-        .online { background: var(--green); }
-        #msg-box { flex: 1; overflow-y: auto; padding: 15px; background: #e5ddd5; display: flex; flex-direction: column; gap: 8px; padding-bottom: 80px; }
+        #chat-list { flex: 1; overflow-y: auto; background: #fff; }
+        .c-row { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; cursor: pointer; }
+        .img-box { width: 45px; height: 45px; margin-right: 12px; position: relative; }
+        .img-box img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .c-info { display: flex; flex-direction: column; text-align: left; }
+        .c-name { font-weight: bold; font-size: 15px; }
+        .c-num { font-size: 11px; color: #888; }
+        #msg-box { flex: 1; overflow-y: auto; padding: 15px; background: #efe7dd; display: flex; flex-direction: column; gap: 8px; }
         .msg { padding: 8px 12px; border-radius: 12px; max-width: 80%; font-size: 14px; }
-        .me { background: #dcf8c6; align-self: flex-end; } .you { background: #fff; align-self: flex-start; }
-        .footer { position: absolute; bottom: 0; width: 100%; background: #f0f0f0; padding: 10px; display: flex; gap: 8px; border-top: 1px solid #ddd; }
-        .footer input { flex: 1; text-align: left; padding: 10px 15px; margin: 0; }
-        .send { background: var(--red); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
-        .ava-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
-        .ava-item { width: 100%; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+        .me { background: #dcf8c6; align-self: flex-end; } 
+        .you { background: #fff; align-self: flex-start; }
+        .footer { padding: 10px; background: #f0f0f0; display: flex; gap: 8px; align-items: center; }
+        .footer input { flex: 1; text-align: left; margin: 0; padding: 10px 15px; background: #fff; }
+        .send-btn { background: var(--red); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -39,59 +37,66 @@
 <div id="app-wrap">
     <div id="login-screen" class="screen" style="display: flex;">
         <img src="https://img.freepik.com/premium-vector/cute-orange-cat-avatar-vector-illustration_1142-40194.jpg" class="logo">
-        <h2 style="color:var(--red); margin:0;">লগইন</h2>
+        <h3 style="color:var(--red);">লাল বিলাই লগইন</h3>
         <input type="number" id="l-ph" placeholder="ফোন নাম্বার">
         <input type="password" id="l-ps" placeholder="পাসওয়ার্ড">
         <button class="btn" onclick="doLogin()">প্রবেশ করুন</button>
-        <p onclick="showForgot()" style="color:var(--red); font-size:13px; cursor:pointer; margin-top:15px; text-decoration:underline;">পাসওয়ার্ড ভুলে গেছেন?</p>
-        <p onclick="showReg()" style="color:#666; font-size:13px; cursor:pointer; margin-top:10px;">অ্যাকাউন্ট নেই? নতুন খুলুন</p>
+        <p onclick="showForgot()" style="color:var(--red); font-size:13px; cursor:pointer;">পাসওয়ার্ড ভুলে গেছেন?</p>
+        <p onclick="showReg()" style="color:#777; font-size:13px; cursor:pointer;">নতুন অ্যাকাউন্ট</p>
     </div>
 
     <div id="reg-screen" class="screen">
-        <h3>নতুন অ্যাকাউন্ট</h3>
-        <input type="number" id="r-ph" placeholder="নাম্বার">
-        <input type="password" id="r-ps" placeholder="পাসওয়ার্ড সেট করুন">
-        <button class="btn" onclick="startReg()">রেজিস্ট্রেশন করুন</button>
-        <p onclick="showLogin()" style="color:gray; cursor:pointer;">পিছনে যান</p>
+        <h3>রেজিস্ট্রেশন</h3>
+        <input type="text" id="r-name" placeholder="আপনার নাম">
+        <input type="number" id="r-ph" placeholder="ফোন নাম্বার">
+        <input type="password" id="r-ps" placeholder="পাসওয়ার্ড">
+        <button class="btn" onclick="startReg()">ওটিপি পাঠান</button>
+        <p onclick="showLogin()" style="cursor:pointer; color:gray;">পিছনে</p>
     </div>
 
     <div id="otp-screen" class="screen">
-        <h3 id="otp-title">ভেরিফিকেশন</h3>
-        <p id="otp-hint" style="font-size:12px; color:#666;">কোডটি পেতে হোয়াটসঅ্যাপে মেসেজ দিন।</p>
-        <a href="https://wa.me/9660558687975" target="_blank" class="wa-btn">💬 WhatsApp থেকে কোড নিন</a>
-        <input type="number" id="otp-val" placeholder="৪ ডিজিট ওটিপি">
+        <h3 id="otp-title">ওটিপি ভেরিফাই</h3>
+        <input type="number" id="otp-val" placeholder="কোড দিন">
         <button class="btn" onclick="verifyOTP()">নিশ্চিত করুন</button>
+        <p onclick="location.reload()" style="color:red; cursor:pointer; font-size:12px; margin-top:20px;">বাতিল</p>
+    </div>
+
+    <div id="profile-screen" class="screen">
+        <h3>প্রোফাইল সেটআপ</h3>
+        <img id="p-ava" src="" style="width:80px; height:80px; border-radius:50%; margin-bottom:10px;">
+        <input type="text" id="up-name" placeholder="আপনার নতুন নাম">
+        <button class="btn" onclick="updateProfile()">সেভ করুন</button>
+        <p onclick="hideProfile()" style="cursor:pointer; color:gray;">পিছনে</p>
     </div>
 
     <div id="main-app" style="display:none; flex-direction:column; height:100%;">
         <header>
             <div style="display:flex; align-items:center;">
-                <img id="my-ava" src="" class="u-img" onclick="openAva()">
-                <span style="margin-left:10px; font-weight:bold;">লাল বিলাই চ্যাট</span>
+                <img id="my-ava" src="" style="width:35px; height:35px; border-radius:50%; border:2px solid #fff; cursor:pointer;" onclick="showProfile()">
+                <div style="margin-left:10px; display:flex; flex-direction:column;">
+                    <span id="my-display-name" style="font-weight:bold; font-size:13px;">নাম লোড হচ্ছে...</span>
+                </div>
             </div>
             <span onclick="logout()" style="font-size:11px; cursor:pointer;">লগ আউট</span>
         </header>
         <div id="chat-list"></div>
-        <div style="position:absolute; bottom:20px; right:20px; width:55px; height:55px; background:var(--red); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:25px; cursor:pointer;" onclick="addFriend()">+</div>
+        <div style="position:absolute; bottom:25px; right:20px; width:50px; height:50px; background:var(--red); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:25px; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3);" onclick="addF()">+</div>
     </div>
 
     <div id="chat-window" style="display:none; flex-direction:column; height:100%; position:absolute; inset:0; background:#fff; z-index:100;">
         <header>
-            <span onclick="closeChat()" style="cursor:pointer; font-size:22px;">←</span>
-            <span id="t-num" style="font-size:14px; font-weight:bold;"></span>
-            <img id="t-ava" src="" class="u-img">
+            <span onclick="closeC()" style="cursor:pointer; font-size:20px;">←</span>
+            <div style="flex:1; margin-left:10px; display:flex; flex-direction:column;">
+                <span id="t-name" style="font-size:14px; font-weight:bold;"></span>
+                <span id="t-num-sub" style="font-size:10px; opacity:0.8;"></span>
+            </div>
+            <img id="t-ava" src="" style="width:35px; height:35px; border-radius:50%;">
         </header>
         <div id="msg-box"></div>
         <div class="footer">
             <input type="text" id="m-text" placeholder="মেসেজ...">
-            <button class="send" onclick="sendMsg()">🚀</button>
+            <button class="send-btn" onclick="sendM()">🚀</button>
         </div>
-    </div>
-
-    <div id="ava-modal" class="screen">
-        <h3>বিলাই প্রোফাইল</h3>
-        <div class="ava-grid" id="ava-grid"></div>
-        <button class="btn" style="width:100px; margin-top:20px;" onclick="hideAva()">বন্ধ</button>
     </div>
 </div>
 
@@ -99,86 +104,90 @@
     const firebaseConfig = { databaseURL: "https://kbook-5d175-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const catAvatars = ["https://img.freepik.com/premium-vector/cute-orange-cat-avatar-vector-illustration_1142-40194.jpg","https://img.freepik.com/premium-vector/cute-funny-red-cat-flat-style-avatar_762604-184.jpg","https://img.freepik.com/premium-vector/cat-avatar-funny-cute-ginger-kitten-face-isolated-white-background_619106-695.jpg","https://img.freepik.com/premium-vector/cute-kitten-avatar-ginger-cat-head-hand-drawn-vector-illustration_497042-835.jpg","https://img.freepik.com/premium-vector/cat-icon-ginger-cat-head-face-isolated-white-background_619106-697.jpg","https://img.freepik.com/premium-vector/ginger-cat-avatar-cute-cartoon-animal-portrait_497042-921.jpg"];
 
     let myPhone = localStorage.getItem("lb_phone") || "";
-    let flow = ""; 
-    let activeChat = "";
+    let flow = ""; let tempNum = ""; let tempPass = ""; let tempName = "";
 
     if(myPhone) startApp();
 
-    function showReg() { hideScreens(); document.getElementById('reg-screen').style.display='flex'; }
-    function showLogin() { hideScreens(); document.getElementById('login-screen').style.display='flex'; }
-    function hideScreens() { document.querySelectorAll('.screen').forEach(s => s.style.display='none'); }
+    function showReg() { hideS(); document.getElementById('reg-screen').style.display='flex'; }
+    function showLogin() { hideS(); document.getElementById('login-screen').style.display='flex'; }
+    function showProfile() { 
+        hideS(); 
+        document.getElementById('profile-screen').style.display='flex'; 
+        db.ref('users/' + myPhone).once('value', s => {
+            document.getElementById('up-name').value = s.val().name || "";
+            document.getElementById('p-ava').src = s.val().profilePic;
+        });
+    }
+    function hideProfile() { document.getElementById('profile-screen').style.display='none'; document.getElementById('main-app').style.display='flex'; }
+    function hideS() { document.querySelectorAll('.screen').forEach(s => s.style.display='none'); }
+
+    function updateProfile() {
+        let n = document.getElementById('up-name').value;
+        if(!n) return alert("নাম দিন");
+        db.ref('users/' + myPhone).update({ name: n });
+        alert("নাম আপডেট হয়েছে!");
+        hideProfile();
+    }
 
     function doLogin() {
         let p = document.getElementById('l-ph').value;
         let s = document.getElementById('l-ps').value;
         db.ref('users/' + p).once('value', snap => {
-            if(!snap.exists()) return alert("অ্যাকাউন্ট নেই! রেজিস্ট্রেশন করুন।");
+            if(!snap.exists()) return alert("নেই!");
             if(snap.val().pass === s) { localStorage.setItem("lb_phone", p); location.reload(); }
             else alert("ভুল পাসওয়ার্ড!");
-        });
-    }
-
-    function showForgot() {
-        let p = document.getElementById('l-ph').value;
-        if(!p) return alert("আগে আপনার নাম্বারটি লিখুন");
-        db.ref('users/' + p).once('value', snap => {
-            if(!snap.exists()) return alert("এই নাম্বারে কোনো অ্যাকাউন্ট নেই! দয়া করে নতুন অ্যাকাউন্ট খুলুন।");
-            flow = "forgot";
-            sendOTP(p);
         });
     }
 
     function startReg() {
         let p = document.getElementById('r-ph').value;
         let s = document.getElementById('r-ps').value;
-        if(p.length < 10) return alert("সঠিক নাম্বার দিন");
-        db.ref('users/' + p).once('value', snap => {
-            if(snap.exists()) return alert("অ্যাকাউন্ট অলরেডি আছে! লগইন করুন।");
-            flow = "reg";
-            sendOTP(p, s);
-        });
+        let n = document.getElementById('r-name').value;
+        if(p.length < 10 || !n) return alert("সব তথ্য সঠিক দিন");
+        flow = "reg"; tempNum = p; tempPass = s; tempName = n;
+        sendOTP(p);
     }
 
-    function sendOTP(p, s="") {
+    function showForgot() {
+        let p = document.getElementById('l-ph').value;
+        if(!p) return alert("নাম্বার লিখুন");
+        flow = "forgot"; tempNum = p;
+        sendOTP(p);
+    }
+
+    function sendOTP(p) {
         let code = Math.floor(1000 + Math.random()*9000).toString();
-        db.ref('admin_otp/' + p).set({ code: code, pass: s, flow: flow });
-        hideScreens();
-        document.getElementById('otp-screen').style.display='flex';
-        document.getElementById('otp-title').innerText = flow === "reg" ? "নতুন রেজিস্ট্রেশন" : "পাসওয়ার্ড রিসেট";
+        let ref = db.ref('admin_otp/' + p);
+        ref.set({ code: code, type: flow, time: Date.now() });
+        setTimeout(() => ref.remove(), 300000); 
+        hideS(); document.getElementById('otp-screen').style.display='flex';
     }
 
     function verifyOTP() {
-        let p = flow === "reg" ? document.getElementById('r-ph').value : document.getElementById('l-ph').value;
         let c = document.getElementById('otp-val').value;
-        db.ref('admin_otp/' + p).once('value', snap => {
+        db.ref('admin_otp/' + tempNum).once('value', snap => {
             if(snap.val() && snap.val().code === c) {
                 if(flow === "reg") {
-                    db.ref('users/' + p).set({ pass: snap.val().pass, profilePic: catAvatars[0], status: 'online' });
-                    localStorage.setItem("lb_phone", p); location.reload();
+                    db.ref('users/' + tempNum).set({ name: tempName, pass: tempPass, profilePic: "https://img.freepik.com/premium-vector/cute-orange-cat-avatar-vector-illustration_1142-40194.jpg", status: 'online' });
+                    localStorage.setItem("lb_phone", tempNum); location.reload();
                 } else {
                     let n = prompt("নতুন পাসওয়ার্ড দিন:");
-                    if(n) { db.ref('users/' + p).update({ pass: n }); alert("পাসওয়ার্ড বদলেছে!"); location.reload(); }
+                    if(n) { db.ref('users/' + tempNum).update({ pass: n }); location.reload(); }
                 }
             } else alert("ভুল ওটিপি!");
         });
     }
 
     function startApp() {
-        hideScreens(); document.getElementById('main-app').style.display='flex';
-        db.ref('users/' + myPhone + '/status').set('online');
-        db.ref('users/' + myPhone + '/status').onDisconnect().set('offline');
-        db.ref('users/' + myPhone + '/profilePic').on('value', s => document.getElementById('my-ava').src = s.val());
-        loadL();
-        const grid = document.getElementById('ava-grid');
-        catAvatars.forEach(url => {
-            let img = document.createElement('img');
-            img.src = url; img.className = 'ava-item';
-            img.onclick = () => { db.ref('users/' + myPhone).update({ profilePic: url }); hideAva(); };
-            grid.appendChild(img);
+        hideS(); document.getElementById('main-app').style.display='flex';
+        db.ref('users/' + myPhone).on('value', s => {
+            let d = s.val();
+            document.getElementById('my-ava').src = d.profilePic;
+            document.getElementById('my-display-name').innerText = d.name || myPhone;
         });
+        loadL();
     }
 
     function loadL() {
@@ -186,24 +195,33 @@
             let list = document.getElementById('chat-list'); list.innerHTML = "";
             snap.forEach(c => {
                 db.ref('users/' + c.key).on('value', u => {
-                    let d = u.val(); let st = d.status === 'online' ? 'online' : '';
-                    list.innerHTML += `<div class="c-row" onclick="openChat('${c.key}')"><div class="img-box"><img src="${d.profilePic}"><div class="dot ${st}"></div></div><span>${c.key}</span></div>`;
+                    let d = u.val();
+                    let dName = d.name || c.key;
+                    list.innerHTML += `<div class="c-row" onclick="openC('${c.key}')">
+                        <div class="img-box"><img src="${d.profilePic}"></div>
+                        <div class="c-info"><span class="c-name">${dName}</span><span class="c-num">${c.key}</span></div>
+                    </div>`;
                 });
             });
         });
     }
 
-    function openChat(n) {
+    function openC(n) {
         activeChat = n; document.getElementById('chat-window').style.display='flex';
-        document.getElementById('t-num').innerText = n;
-        db.ref('users/' + n + '/profilePic').once('value', s => document.getElementById('t-ava').src = s.val());
+        db.ref('users/' + n).once('value', s => {
+            let d = s.val();
+            document.getElementById('t-name').innerText = d.name || n;
+            document.getElementById('t-num-sub').innerText = n;
+            document.getElementById('t-ava').src = d.profilePic;
+        });
         listenM();
     }
 
-    function sendMsg() {
+    function sendM() {
         let t = document.getElementById('m-text').value; if(!t) return;
         let cid = [myPhone, activeChat].sort().join("_");
-        db.ref('chats/' + cid).push({ s: myPhone, m: t, t: Date.now(), seen: false });
+        let enc = btoa(unescape(encodeURIComponent(t))); 
+        db.ref('chats/' + cid).push({ s: myPhone, m: enc, t: Date.now() });
         db.ref('my_contacts/' + myPhone + '/' + activeChat).set(true);
         db.ref('my_contacts/' + activeChat + '/' + myPhone).set(true);
         document.getElementById('m-text').value = "";
@@ -211,23 +229,20 @@
 
     function listenM() {
         let cid = [myPhone, activeChat].sort().join("_");
-        db.ref('chats/' + cid).off();
         db.ref('chats/' + cid).on('value', snap => {
             let box = document.getElementById('msg-box'); box.innerHTML = "";
             snap.forEach(m => {
                 let d = m.val(); let side = d.s === myPhone ? 'me' : 'you';
-                if(side === 'you' && !d.seen) db.ref('chats/' + cid + '/' + m.key).update({ seen: true });
-                box.innerHTML += `<div class="msg ${side}">${d.m}${side==='me'&&d.seen?' <small style="color:blue">✓✓</small>':''}</div>`;
+                let dec = decodeURIComponent(escape(atob(d.m)));
+                box.innerHTML += `<div class="msg ${side}">${dec}</div>`;
             });
             box.scrollTop = box.scrollHeight;
         });
     }
 
-    function openAva() { hideScreens(); document.getElementById('ava-modal').style.display='flex'; }
-    function hideAva() { document.getElementById('ava-modal').style.display='none'; }
-    function closeChat() { document.getElementById('chat-window').style.display='none'; }
-    function addFriend() { let n = prompt("নাম্বার:"); if(n && n !== myPhone) db.ref('users/' + n).once('value', s => { if(s.exists()){ db.ref('my_contacts/' + myPhone + '/' + n).set(true); openChat(n); }else alert("নেই!"); }); }
-    function logout() { db.ref('users/' + myPhone + '/status').set('offline'); localStorage.clear(); location.reload(); }
+    function closeC() { document.getElementById('chat-window').style.display='none'; }
+    function addF() { let n = prompt("নাম্বার:"); if(n && n !== myPhone) db.ref('users/' + n).once('value', s => { if(s.exists()){ db.ref('my_contacts/' + myPhone + '/' + n).set(true); openC(n); }else alert("নেই!"); }); }
+    function logout() { localStorage.clear(); location.reload(); }
 </script>
 </body>
 </html>
