@@ -3,56 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lal Bilai - Private Messenger</title>
+    <title>Lal Bilai - Powered by KAIYUM</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
-        :root { --red: #D32F2F; --white: #fff; --bg: #f4f4f4; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --red: #D32F2F; --white: #fff; --bg: #f8f9fa; --dark-text: #2c3e50; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
 
         #app-wrap { 
-            width: 100%; max-width: 360px; height: 90vh; background: var(--white); 
+            width: 100%; max-width: 365px; height: 90vh; background: var(--white); 
             position: relative; display: flex; flex-direction: column; overflow: hidden;
-            border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.6);
         }
 
         /* স্প্ল্যাশ স্ক্রিন এনিমেশন */
         #splash {
-            position: absolute; inset: 0; background: #fff; z-index: 2000;
+            position: absolute; inset: 0; background: #fff; z-index: 5000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
         .anim-logo {
-            width: 120px; height: 120px; border-radius: 50%;
-            border: 4px solid var(--red);
-            animation: pulse 2s infinite ease-in-out;
+            width: 110px; height: 110px; border-radius: 50%;
+            border: 3px solid var(--red);
+            animation: bounce 2s infinite ease-in-out;
+            margin-bottom: 20px;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(0.9); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 30px rgba(211, 47, 47, 0.4); }
-            100% { transform: scale(0.9); opacity: 0.7; }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-15px) scale(1.05); box-shadow: 0 15px 25px rgba(211, 47, 47, 0.3); }
         }
 
-        .dev-tag { margin-top: 20px; font-size: 14px; color: #555; letter-spacing: 1px; }
-        .dev-name { color: var(--red); font-weight: bold; }
+        .kaiyum-brand {
+            font-size: 28px; font-weight: 900; color: var(--red);
+            letter-spacing: 4px; text-transform: uppercase;
+            animation: fadeIn 1.5s ease-in;
+        }
 
-        /* স্ক্রিন ডিজাইন */
+        @keyframes fadeIn { from { opacity: 0; letter-spacing: 0px; } to { opacity: 1; letter-spacing: 4px; } }
+
+        .dev-subtext { font-size: 11px; color: #888; margin-top: 5px; font-weight: 500; }
+
+        /* স্ক্রিন স্টাইল */
         .screen { padding: 25px; display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; position: absolute; inset: 0; background: #fff; z-index: 100; }
         
-        .privacy-box {
-            text-align: center; background: #fff5f5; padding: 15px; border-radius: 12px; margin-bottom: 20px;
-            border: 1px solid #ffecec;
-        }
+        input { width: 100%; padding: 13px; margin: 10px 0; border: 1.5px solid #eee; border-radius: 30px; outline: none; text-align: center; background: #fafafa; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 30px; background: var(--red); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(211, 47, 47, 0.2); }
+        .btn:active { transform: scale(0.96); }
 
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1.5px solid #eee; border-radius: 30px; outline: none; text-align: center; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 30px; background: var(--red); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn:active { transform: scale(0.95); }
+        header { background: var(--red); color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; height: 60px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .p-img-sm { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid #fff; }
 
-        header { background: var(--red); color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; height: 60px; }
-        .p-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; }
+        .privacy-notice { font-size: 11px; color: #999; text-align: center; margin-bottom: 20px; padding: 0 10px; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -60,71 +64,75 @@
 <div id="app-wrap">
     <div id="splash">
         <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="anim-logo">
-        <div class="dev-tag">Developed by <span class="dev-name">A Qayum</span></div>
-        <div style="font-size: 10px; color: #aaa; margin-top: 5px;">Join our new privacy chat app</div>
+        <div class="kaiyum-brand">KAIYUM</div>
+        <div class="dev-subtext">JOIN OUR NEW PRIVACY CHAT APP</div>
     </div>
 
     <div id="scr-login" class="screen">
-        <div class="privacy-box">
-            <h4 style="margin: 0; color: var(--red);">End-to-End Encrypted</h4>
-            <p style="font-size: 11px; color: #777;">Your privacy is our priority. Experience the smoothest secure chat.</p>
-        </div>
+        <h2 style="color:var(--dark-text); margin-bottom: 5px;">Welcome Back</h2>
+        <p class="privacy-notice">The smoothest and most secure environment for your private conversations.</p>
         <input type="number" id="l-ph" placeholder="Phone Number">
         <input type="password" id="l-ps" placeholder="Password">
         <button class="btn" onclick="handleLogin()">Sign In</button>
-        <p style="font-size:12px; margin-top:15px; cursor:pointer; color: #888;" onclick="showScr('scr-reg')">Create New Account</p>
+        <p style="font-size:12px; margin-top:20px; cursor:pointer; color: var(--red); font-weight: 600;" onclick="showScr('scr-reg')">Create New Account</p>
     </div>
 
     <div id="scr-reg" class="screen">
-        <h3 style="color:var(--red);">Join Us</h3>
+        <h3 style="color:var(--dark-text);">New Registration</h3>
         <input type="text" id="r-name" placeholder="Full Name">
         <input type="number" id="r-ph" placeholder="Phone Number">
         <input type="password" id="r-ps" placeholder="Set Password">
-        <button class="btn" onclick="startReg()">Get Verification Code</button>
-        <p onclick="showScr('scr-login')" style="cursor:pointer; font-size:12px;">Back to Login</p>
+        <button class="btn" onclick="startReg()">Request Access Code</button>
+        <p onclick="showScr('scr-login')" style="cursor:pointer; font-size:12px; margin-top:15px;">Already have an account? Login</p>
     </div>
 
     <div id="scr-verify" class="screen">
-        <h3>Verify Identity</h3>
-        <p style="font-size:11px; color:#666; text-align:center;">Click the button below to get your secret code from the developer via WhatsApp.</p>
+        <h3>Verify Security</h3>
+        <p style="font-size:12px; color:#666; text-align:center;">Security check: Your unique access code has been generated. Get it from <b>KAIYUM</b> on WhatsApp.</p>
         <input type="number" id="v-otp" placeholder="Enter 4-Digit Code">
-        <button class="btn" onclick="finishReg()">Verify & Start</button>
-        <a id="wa-link" href="#" target="_blank" style="margin-top:15px; color:#25D366; text-decoration:none; font-weight:bold; font-size:13px;">💬 Request Code via WhatsApp</a>
+        <button class="btn" onclick="finishReg()">Complete & Secure</button>
+        <a id="wa-link" href="#" target="_blank" style="margin-top:20px; color:#25D366; text-decoration:none; font-weight:bold; font-size:13px; display: flex; align-items:center; gap: 5px;">
+            <span style="font-size: 20px;">💬</span> Message KAIYUM for Code
+        </a>
     </div>
 
     <div id="scr-main" style="display:none; flex-direction:column; height:100%;">
         <header>
             <div style="display:flex; align-items:center;">
-                <img id="my-img" src="" class="p-img">
-                <div style="margin-left:10px;"><span id="my-name" style="font-weight:bold; font-size:14px;">User</span></div>
+                <img id="my-img" src="" class="p-img-sm">
+                <div style="margin-left:10px;">
+                    <span id="my-name" style="font-weight:bold; font-size:14px; display:block;">User</span>
+                    <span style="font-size: 9px; opacity: 0.8;">Online Privacy Active</span>
+                </div>
             </div>
-            <div onclick="logout()" style="font-size:11px; cursor:pointer; background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:15px;">Logout</div>
+            <div onclick="logout()" style="font-size:10px; cursor:pointer; border: 1px solid rgba(255,255,255,0.4); padding: 4px 10px; border-radius: 10px;">Logout</div>
         </header>
-        <div id="list-container" style="flex:1; overflow-y:auto;">
-            <p style="text-align:center; margin-top:50px; color:#ccc;">Secure Environment Ready</p>
+        <div id="list-container" style="flex:1; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ccc;">
+            <p>Securely Loaded</p>
         </div>
     </div>
 </div>
 
 <script>
-    // Firebase Config (Keep yours)
+    // Firebase Config (Keep your original DB URL)
     const firebaseConfig = { databaseURL: "https://kbook-5d175-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    const ADMIN_WA = "9660558687975";
+    const ADMIN_WA = "9660558687975"; // আপনার নাম্বার
     const DEF_IMG = "https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg";
 
-    // স্প্ল্যাশ স্ক্রিন কন্ট্রোল
+    // স্প্ল্যাশ স্ক্রিন টাইমআউট
     window.onload = () => {
         setTimeout(() => {
-            document.getElementById('splash').style.transition = '0.5s';
-            document.getElementById('splash').style.opacity = '0';
+            const splash = document.getElementById('splash');
+            splash.style.transition = 'opacity 0.8s ease';
+            splash.style.opacity = '0';
             setTimeout(() => {
-                document.getElementById('splash').style.display = 'none';
+                splash.style.display = 'none';
                 checkAuth();
-            }, 500);
-        }, 3000); // ৩ সেকেন্ড এনিমেশন হবে
+            }, 800);
+        }, 3500); // ৩.৫ সেকেন্ড এনিমেশন চলবে
     };
 
     function showScr(id) {
@@ -135,7 +143,7 @@
     function checkAuth() {
         if(localStorage.getItem("lb_phone")) {
             showScr('scr-main');
-            loadAppData();
+            loadUserData();
         } else {
             showScr('scr-login');
         }
@@ -146,14 +154,15 @@
         let n = document.getElementById('r-name').value;
         let p = document.getElementById('r-ph').value;
         let s = document.getElementById('r-ps').value;
-        if(!n || !p || !s) return alert("Fill all fields!");
+        if(!n || !p || !s) return alert("All fields are required!");
 
         let code = Math.floor(1000 + Math.random() * 9000).toString();
         tempReg = { n, p, s, code };
 
-        db.ref('admin_approval/' + p).set({ name: n, code: code, status: "pending" });
+        // ফায়ারবেসে এডমিন ডাটা সেভ
+        db.ref('admin_verifications/' + p).set({ name: n, code: code, timestamp: Date.now() });
 
-        let msg = `Hello Developer A Qayum, I want to join Lal Bilai Chat.\nName: ${n}\nPhone: ${p}\nPlease provide my verification code.`;
+        let msg = `Assalamu Alaikum KAIYUM,\nI want to join Lal Bilai Private App.\nName: ${n}\nPhone: ${p}\nPlease give me the 4-digit verification code.`;
         document.getElementById('wa-link').href = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(msg)}`;
         
         showScr('scr-verify');
@@ -164,7 +173,9 @@
             db.ref('users/' + tempReg.p).set({ name: tempReg.n, pass: tempReg.s, profilePic: DEF_IMG, online: true });
             localStorage.setItem("lb_phone", tempReg.p);
             location.reload();
-        } else alert("Invalid Code!");
+        } else {
+            alert("Incorrect code. Please contact KAIYUM.");
+        }
     }
 
     function handleLogin() {
@@ -174,13 +185,13 @@
             if(snap.exists() && snap.val().pass === s) {
                 localStorage.setItem("lb_phone", p);
                 location.reload();
-            } else alert("Wrong credentials!");
+            } else alert("Invalid phone or password!");
         });
     }
 
-    function loadAppData() {
-        let myPhone = localStorage.getItem("lb_phone");
-        db.ref('users/' + myPhone).on('value', snap => {
+    function loadUserData() {
+        let phone = localStorage.getItem("lb_phone");
+        db.ref('users/' + phone).on('value', snap => {
             document.getElementById('my-name').innerText = snap.val().name;
             document.getElementById('my-img').src = snap.val().profilePic || DEF_IMG;
         });
