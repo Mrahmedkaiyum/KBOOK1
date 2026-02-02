@@ -3,561 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>লাল বিলাই - Professional Private Messenger</title>
+    <title>লাল বিলাই - Private Messenger</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
         :root {
             --red-main: #D32F2F;
-            --red-light: #FFEBEE;
-            --whatsapp-green: #25D366;
-            --bg-dark: #121212;
-            --text-gray: #757575;
+            --bg-light: #f4f7f6;
+            --white: #ffffff;
             --chat-bg: #E5DDD5;
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        body { 
-            margin: 0; 
-            background: var(--bg-dark); 
-            height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            overflow: hidden;
-        }
+        body { margin: 0; background: #121212; height: 100vh; display: flex; justify-content: center; align-items: center; }
 
-        /* মেইন অ্যাপ কন্টেইনার */
         #app-wrap { 
-            width: 100%; 
-            max-width: 400px; 
-            height: 100vh; 
-            background: #fff; 
-            position: relative; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 100%; max-width: 380px; height: 92vh; background: var(--white); 
+            position: relative; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        @media (min-width: 500px) {
-            #app-wrap { height: 92vh; border-radius: 20px; }
-        }
+        @media (max-width: 450px) { #app-wrap { height: 100vh; border-radius: 0; } }
 
-        /* স্ক্রিন সেটিংস */
-        .screen { 
-            padding: 30px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100%; 
-            text-align: center; 
-            position: absolute; 
-            inset: 0; 
-            background: #fff; 
-            z-index: 10; 
-            display: none; 
-            transition: 0.3s;
-        }
+        .screen { padding: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; position: absolute; inset: 0; background: #fff; z-index: 10; display: none; }
 
-        /* লোগো এবং ইনপুট স্টাইল */
-        .logo-main { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--red-main); margin-bottom: 20px; object-fit: cover; }
+        .logo-main { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--red-main); margin-bottom: 15px; object-fit: cover; }
         
-        input { 
-            width: 100%; 
-            padding: 14px 20px; 
-            margin: 10px 0; 
-            border: 1.5px solid #eee; 
-            border-radius: 30px; 
-            outline: none; 
-            text-align: center; 
-            font-size: 16px; 
-            background: #fafafa;
-        }
-
+        input { width: 100%; padding: 12px 18px; margin: 6px 0; border: 1.5px solid #eee; border-radius: 30px; outline: none; font-size: 14px; background: #f9f9f9; text-align: center; }
         input:focus { border-color: var(--red-main); background: #fff; }
 
-        .btn-primary { 
-            width: 100%; 
-            padding: 15px; 
-            border: none; 
-            border-radius: 30px; 
-            background: var(--red-main); 
-            color: white; 
-            font-weight: bold; 
-            cursor: pointer; 
-            font-size: 16px; 
-            margin-top: 10px;
-            box-shadow: 0 4px 10px rgba(211,47,47,0.3);
-        }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 30px; background: var(--red-main); color: white; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 15px; }
 
-        .btn-primary:active { transform: scale(0.98); }
+        header { background: var(--red-main); color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; height: 60px; flex-shrink: 0; }
+        .p-img-sm { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; }
 
-        /* হেডার স্টাইল */
-        header { 
-            background: var(--red-main); 
-            color: white; 
-            padding: 15px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            z-index: 20;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        #chat-list, #msg-box { flex-grow: 1; overflow-y: auto; width: 100%; }
+        #msg-box { padding: 12px; background: var(--chat-bg); display: flex; flex-direction: column; gap: 8px; }
 
-        .user-profile-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; background: #eee; cursor: pointer; }
+        .c-card { padding: 12px 15px; border-bottom: 1px solid #f2f2f2; display: flex; align-items: center; cursor: pointer; }
+        .c-info { margin-left: 12px; }
+        .c-name { font-weight: bold; font-size: 14px; color: #333; display: block; }
+        .c-phone { font-size: 10px; color: #888; }
 
-        /* চ্যাট লিস্ট */
-        #chat-list { flex: 1; overflow-y: auto; background: #fff; }
-        .contact-card { 
-            padding: 15px 20px; 
-            border-bottom: 1px solid #f5f5f5; 
-            display: flex; 
-            align-items: center; 
-            cursor: pointer; 
-            transition: 0.2s;
-        }
-        .contact-card:hover { background: #fcfcfc; }
-        .contact-info { margin-left: 15px; text-align: left; }
-        .contact-name { font-weight: bold; font-size: 16px; color: #333; display: block; }
-        .contact-status { font-size: 12px; color: var(--text-gray); }
+        .bubble { padding: 8px 12px; border-radius: 15px; max-width: 80%; font-size: 14px; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word; }
+        .me { background: #dcf8c6; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .you { background: #fff; align-self: flex-start; border-bottom-left-radius: 2px; }
 
-        /* চ্যাট বক্স */
-        #msg-box { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 20px; 
-            background: var(--chat-bg); 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-        }
+        .chat-footer { padding: 8px 12px; background: #f0f0f0; display: flex; align-items: center; gap: 8px; }
+        .chat-footer input { text-align: left; margin: 0; padding: 10px 15px; border-radius: 20px; }
 
-        .bubble { 
-            padding: 10px 15px; 
-            border-radius: 18px; 
-            max-width: 85%; 
-            font-size: 15px; 
-            line-height: 1.4; 
-            position: relative;
-            word-wrap: break-word;
-        }
-        .bubble.me { background: #DCF8C6; align-self: flex-end; border-bottom-right-radius: 2px; color: #303030; }
-        .bubble.you { background: #fff; align-self: flex-start; border-bottom-left-radius: 2px; color: #303030; }
+        .send-btn { background: var(--red-main); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; }
 
-        /* মেসেজ ইনপুট এরিয়া */
-        .chat-footer { padding: 10px 15px; background: #f0f0f0; display: flex; align-items: center; gap: 10px; }
-        .chat-footer input { text-align: left; margin: 0; flex: 1; padding: 12px 18px; background: #fff; border: 1px solid #ddd; }
-        .send-btn { 
-            background: var(--red-main); 
-            color: #fff; 
-            border: none; 
-            width: 45px; 
-            height: 45px; 
-            border-radius: 50%; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            cursor: pointer; 
-        }
+        .fab { position: absolute; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--red-main); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 
-        /* অ্যাড বাটন */
-        .fab { 
-            position: absolute; 
-            bottom: 30px; 
-            right: 25px; 
-            width: 60px; 
-            height: 60px; 
-            background: var(--red-main); 
-            color: white; 
-            border-radius: 50%; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            font-size: 30px; 
-            cursor: pointer; 
-            box-shadow: 0 5px 20px rgba(211,47,47,0.4); 
-            z-index: 15;
-        }
-
-        /* ওটিপি স্পেশাল বাটন */
-        .wa-link { 
-            margin-top: 20px; 
-            color: var(--whatsapp-green); 
-            text-decoration: none; 
-            font-weight: bold; 
-            font-size: 13px; 
-            border: 1px solid var(--whatsapp-green); 
-            padding: 8px 15px; 
-            border-radius: 20px; 
-        }
+        .wa-btn { margin-top: 15px; color: #25D366; text-decoration: none; font-size: 12px; font-weight: bold; border: 1px solid #25D366; padding: 6px 12px; border-radius: 20px; }
     </style>
 </head>
 <body>
 
 <div id="app-wrap">
     
-    <div id="login-screen" class="screen" style="display: flex;">
-        <img src="https://i.ibb.co/Zz0WvY9/cat-logo.jpg" class="logo-main">
-        <h2 style="color:var(--red-main); margin-bottom:5px;">লাল বিলাই চ্যাট</h2>
-        <p style="color:var(--text-gray); margin-bottom:20px; font-size:14px;">আপনার গোপনীয়তা আমাদের দায়িত্ব</p>
+    <div id="scr-login" class="screen" style="display: flex;">
+        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="logo-main">
+        <h3 style="color:var(--red-main); margin:0 0 10px 0;">লাল বিলাই চ্যাট</h3>
         <input type="number" id="l-ph" placeholder="ফোন নাম্বার">
         <input type="password" id="l-ps" placeholder="পাসওয়ার্ড">
-        <button class="btn-primary" onclick="doLogin()">প্রবেশ করুন</button>
-        <div style="margin-top:20px;">
-            <span class="contact-status" style="cursor:pointer" onclick="showForgot()">পাসওয়ার্ড ভুলে গেছেন?</span> | 
-            <span class="contact-status" style="cursor:pointer; color:var(--red-main)" onclick="showReg()">নতুন একাউন্ট</span>
+        <button class="btn" onclick="handleLogin()">প্রবেশ করুন</button>
+        <div style="margin-top:15px; font-size:12px; color:#888;">
+            <span onclick="showScr('scr-forgot')" style="cursor:pointer">পাসওয়ার্ড ভুলে গেছেন?</span> | 
+            <span onclick="showScr('scr-reg')" style="color:var(--red-main); font-weight:bold; cursor:pointer;">নতুন একাউন্ট</span>
         </div>
     </div>
 
-    <div id="reg-screen" class="screen">
-        <h2 style="color:var(--red-main)">নতুন একাউন্ট</h2>
+    <div id="scr-reg" class="screen">
+        <h3 style="color:var(--red-main);">রেজিস্ট্রেশন</h3>
         <input type="text" id="r-name" placeholder="আপনার নাম">
         <input type="number" id="r-ph" placeholder="ফোন নাম্বার">
-        <input type="password" id="r-ps" placeholder="পাসওয়ার্ড সেট করুন">
-        <button class="btn-primary" onclick="startReg()">ওটিপি পাঠান</button>
-        <p class="contact-status" style="margin-top:20px; cursor:pointer" onclick="showLogin()">পিছনে ফিরে যান</p>
+        <input type="password" id="r-ps" placeholder="পাসওয়ার্ড দিন">
+        <button class="btn" onclick="handleRegister()">একাউন্ট খুলুন</button>
+        <p style="margin-top:15px; font-size:12px; color:#888; cursor:pointer;" onclick="showScr('scr-login')">পিছনে যান</p>
     </div>
 
-    <div id="otp-screen" class="screen">
-        <h2 style="color:var(--red-main)">ভেরিফিকেশন</h2>
-        <p id="otp-msg" style="font-size:14px; color:#555;">আপনার ওটিপি কোডটি অ্যাডমিন প্যানেলে পাঠানো হয়েছে।</p>
-        <input type="number" id="otp-val" placeholder="৪ ডিজিটের কোড দিন">
-        <button class="btn-primary" onclick="verifyOTP()">নিশ্চিত করুন</button>
-        <div style="margin-top:30px; border-top:1px solid #eee; padding-top:20px; width:100%;">
-            <p style="font-size:11px; color:#999;">প্রয়োজন হলে অ্যাডমিনের সাথে যোগাযোগ করুন</p>
-            <a href="https://wa.me/9660558687975" target="_blank" class="wa-link">💬 WhatsApp Admin</a>
-        </div>
+    <div id="scr-forgot" class="screen">
+        <h3 style="color:var(--red-main);">পাসওয়ার্ড পুনরুদ্ধার</h3>
+        <p style="font-size:12px; color:#666; margin-bottom:10px;">আপনার রেজিস্টার্ড নাম্বারটি লিখুন</p>
+        <input type="number" id="f-ph" placeholder="ফোন নাম্বার">
+        <button class="btn" onclick="generateForgotOTP()">কোড পাঠান</button>
+        <p style="margin-top:15px; font-size:12px; color:#888; cursor:pointer;" onclick="showScr('scr-login')">পিছনে যান</p>
     </div>
 
-    <div id="profile-screen" class="screen">
-        <h2 style="color:var(--red-main)">প্রোফাইল সেটিংস</h2>
-        <img id="edit-preview" src="" class="logo-main">
-        <input type="text" id="edit-name" placeholder="নতুন নাম">
-        <input type="text" id="edit-pic" placeholder="নতুন প্রোফাইল ছবির লিঙ্ক (ঐচ্ছিক)">
-        <button class="btn-primary" onclick="updateProfile()">সেভ করুন</button>
-        <button class="btn-primary" style="background:#888;" onclick="hideScreens(); document.getElementById('main-app').style.display='flex';">বাতিল</button>
-    </div>
-
-    <div id="main-app" style="display:none; flex-direction:column; height:100%;">
-        <header>
-            <div style="display:flex; align-items:center;" onclick="showProfileEdit()">
-                <img id="my-header-img" src="" class="user-profile-img">
-                <div style="margin-left:12px;">
-                    <span id="my-header-name" style="font-weight:bold; display:block; font-size:15px;">লোডিং...</span>
-                    <span style="font-size:10px; opacity:0.8;">আমার প্রোফাইল</span>
-                </div>
-            </div>
-            <div onclick="logout()" style="cursor:pointer; font-size:13px; font-weight:bold;">লগআউট</div>
-        </header>
+    <div id="scr-otp" class="screen">
+        <h3 style="color:var(--red-main);">কোড যাচাই</h3>
+        <p style="font-size:12px; color:#666;">কোডটি পেতে আমাদের হোয়াটসঅ্যাপে যোগাযোগ করুন।</p>
+        <input type="number" id="otp-val" placeholder="৪ ডিজিটের কোড">
+        <button class="btn" onclick="verifyForgotOTP()">যাচাই করুন</button>
         
-        <div id="chat-list"></div>
-        
-        <div class="fab" onclick="addNewContact()">+</div>
+        <a id="wa-link" href="#" target="_blank" class="wa-btn">💬 ওটিপির জন্য হোয়াটসঅ্যাপে ক্লিক করুন</a>
     </div>
 
-    <div id="chat-window" style="display:none; flex-direction:column; height:100%; position:absolute; inset:0; background:#fff; z-index:100;">
+    <div id="scr-main" style="display:none; flex-direction:column; height:100%;">
         <header>
             <div style="display:flex; align-items:center;">
-                <span onclick="closeChat()" style="cursor:pointer; font-size:24px; margin-right:15px;">←</span>
-                <img id="target-img" src="" class="user-profile-img">
-                <div style="margin-left:12px;">
-                    <span id="target-name" style="font-weight:bold; font-size:15px; display:block;">নাম...</span>
-                    <span id="target-phone" style="font-size:10px; opacity:0.8;">নাম্বার</span>
+                <img id="my-img" src="" class="p-img-sm">
+                <div style="margin-left:10px;">
+                    <span id="my-name" style="font-weight:bold; font-size:14px; display:block;">নাম</span>
+                    <span style="font-size:9px; opacity:0.8;">আমার প্রোফাইল</span>
+                </div>
+            </div>
+            <div onclick="logout()" style="cursor:pointer; font-size:11px; font-weight:bold; background:rgba(255,255,255,0.2); padding:4px 10px; border-radius:15px;">লগআউট</div>
+        </header>
+        <div id="chat-list"></div>
+        <div class="fab" onclick="addNew()">+</div>
+    </div>
+
+    <div id="scr-chat" style="display:none; flex-direction:column; height:100%; position:absolute; inset:0; background:#fff; z-index:100;">
+        <header>
+            <div style="display:flex; align-items:center;">
+                <span onclick="closeChat()" style="cursor:pointer; font-size:22px; margin-right:12px;">←</span>
+                <img id="t-img" src="" class="p-img-sm">
+                <div style="margin-left:10px;">
+                    <span id="t-display-name" style="font-weight:bold; font-size:14px; display:block;">নাম...</span>
+                    <span style="font-size:9px; opacity:0.9;">অনলাইন</span>
                 </div>
             </div>
         </header>
-        
         <div id="msg-box"></div>
-        
         <div class="chat-footer">
             <input type="text" id="m-input" placeholder="মেসেজ লিখুন...">
-            <button class="send-btn" onclick="sendMessage()">🚀</button>
+            <button class="send-btn" onclick="sendMsg()">🚀</button>
         </div>
     </div>
 
 </div>
 
 <script>
-    // --- ফায়ারবেস কনফিগারেশন ---
     const firebaseConfig = { databaseURL: "https://kbook-5d175-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const DEF_IMG = "https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg";
+    const ADMIN_WA = "9660558687975";
 
-    // --- গ্লোবাল ভেরিয়েবলস ---
-    const DEFAULT_CAT = "https://i.ibb.co/Zz0WvY9/cat-logo.jpg";
     let myPhone = localStorage.getItem("lb_phone") || "";
-    let activeChat = ""; 
-    let flow = ""; // 'reg' or 'forgot'
-    let tempUserData = {};
+    let tempForgotPhone = "";
 
-    // অ্যাপ শুরু
-    if(myPhone) {
-        startApp();
-    } else {
-        showLogin();
+    if(myPhone) { startApp(); } else { showScr('scr-login'); }
+
+    function showScr(id) {
+        document.querySelectorAll('.screen, #scr-main, #scr-chat').forEach(s => s.style.display='none');
+        document.getElementById(id).style.display='flex';
     }
 
-    // --- ফাংশনস ---
-
-    function showLogin() { hideScreens(); document.getElementById('login-screen').style.display='flex'; }
-    function showReg() { hideScreens(); document.getElementById('reg-screen').style.display='flex'; }
-    function hideScreens() { document.querySelectorAll('.screen').forEach(s => s.style.display='none'); }
-
-    // লগইন লজিক
-    function doLogin() {
-        let p = document.getElementById('l-ph').value;
-        let s = document.getElementById('l-ps').value;
-        if(!p || !s) return alert("সব ঘর পূরণ করুন!");
+    // ফরগেট পাসওয়ার্ড ওটিপি জেনারেশন
+    function generateForgotOTP() {
+        let p = document.getElementById('f-ph').value;
+        if(!p) return alert("নাম্বার দিন!");
         
         db.ref('users/' + p).once('value', snap => {
-            if(!snap.exists()) return alert("এই নাম্বারে কোন একাউন্ট নেই!");
-            if(snap.val().pass === s) {
-                localStorage.setItem("lb_phone", p);
-                location.reload();
-            } else {
-                alert("ভুল পাসওয়ার্ড!");
-            }
+            if(snap.exists()) {
+                tempForgotPhone = p;
+                let code = Math.floor(1000 + Math.random() * 9000).toString();
+                // ফায়ারবেসে এডমিন সেকশনে ওটিপি পাঠানো
+                db.ref('admin_otp/' + p).set({ code: code, time: Date.now() });
+                
+                // হোয়াটসঅ্যাপ লিংক সেট করা
+                let msg = `আসসালামু আলাইকুম, আমি আমার লাল বিলাই একাউন্টের পাসওয়ার্ড ভুলে গেছি। \nনাম্বার: ${p} \nদয়া করে ওটিপি কোডটি দিন।`;
+                document.getElementById('wa-link').href = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(msg)}`;
+                
+                showScr('scr-otp');
+            } else alert("এই নাম্বারে কোন একাউন্ট নেই!");
         });
     }
 
-    // রেজিস্ট্রেশন শুরু (ওটিপি জেনারেশন)
-    function startReg() {
-        let n = document.getElementById('r-name').value;
-        let p = document.getElementById('r-ph').value;
-        let s = document.getElementById('r-ps').value;
-
-        if(!n || p.length < 10 || !s) return alert("সঠিক তথ্য দিন!");
-
-        db.ref('users/' + p).once('value', snap => {
-            if(snap.exists()) return alert("এই নাম্বারে অলরেডি একাউন্ট আছে!");
-            
-            flow = "reg";
-            tempUserData = { name: n, phone: p, pass: s };
-            generateOTP(p);
-        });
-    }
-
-    // পাসওয়ার্ড ভুলে গেলে
-    function showForgot() {
-        let p = document.getElementById('l-ph').value;
-        if(!p) return alert("প্রথমে ফোন নাম্বারটি লিখুন!");
-        
-        db.ref('users/' + p).once('value', snap => {
-            if(!snap.exists()) return alert("এই নাম্বারে কোন একাউন্ট নেই!");
-            flow = "forgot";
-            tempUserData = { phone: p };
-            generateOTP(p);
-        });
-    }
-
-    // ওটিপি জেনারেশন ও ৫ মিনিট পর অটো-ডিলিট
-    function generateOTP(phone) {
-        let code = Math.floor(1000 + Math.random() * 9000).toString();
-        let otpRef = db.ref('admin_otp/' + phone);
-        
-        otpRef.set({
-            code: code,
-            type: flow,
-            timestamp: Date.now()
-        });
-
-        // ৫ মিনিট (৩০০,০০০ মি.সে.) পর ডাটাবেস থেকে ডিলিট
-        setTimeout(() => { otpRef.remove(); }, 300000);
-
-        hideScreens();
-        document.getElementById('otp-screen').style.display='flex';
-    }
-
-    // ওটিপি ভেরিফিকেশন
-    function verifyOTP() {
+    function verifyForgotOTP() {
         let inputCode = document.getElementById('otp-val').value;
-        db.ref('admin_otp/' + tempUserData.phone).once('value', snap => {
+        db.ref('admin_otp/' + tempForgotPhone).once('value', snap => {
             if(snap.exists() && snap.val().code === inputCode) {
-                if(flow === "reg") {
-                    db.ref('users/' + tempUserData.phone).set({
-                        name: tempUserData.name,
-                        pass: tempUserData.pass,
-                        profilePic: DEFAULT_CAT,
-                        status: 'online'
-                    });
-                    localStorage.setItem("lb_phone", tempUserData.phone);
-                    location.reload();
-                } else {
-                    let newPass = prompt("নতুন পাসওয়ার্ড দিন:");
-                    if(newPass) {
-                        db.ref('users/' + tempUserData.phone).update({ pass: newPass });
-                        alert("পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!");
-                        location.reload();
-                    }
+                let newPass = prompt("নতুন পাসওয়ার্ড দিন:");
+                if(newPass) {
+                    db.ref('users/' + tempForgotPhone).update({ pass: newPass });
+                    alert("পাসওয়ার্ড পরিবর্তন সফল হয়েছে!");
+                    showScr('scr-login');
                 }
-            } else {
-                alert("ভুল কোড অথবা ওটিপির মেয়াদ শেষ!");
-            }
+            } else alert("ভুল কোড! আপনার হোয়াটসঅ্যাপ নাম্বারের সাথে মিল না থাকলে কোড দেওয়া হবে না।");
         });
     }
 
-    // অ্যাপের মেইন পার্ট শুরু
-    function startApp() {
-        hideScreens();
-        document.getElementById('main-app').style.display='flex';
-        
-        // আমার তথ্য লোড
-        db.ref('users/' + myPhone).on('value', snap => {
-            let data = snap.val();
-            document.getElementById('my-header-img').src = data.profilePic || DEFAULT_CAT;
-            document.getElementById('my-header-name').innerText = data.name || myPhone;
+    function handleRegister() {
+        let n = document.getElementById('r-name').value; let p = document.getElementById('r-ph').value; let s = document.getElementById('r-ps').value;
+        if(!n || !p || !s) return alert("সব দিন!");
+        db.ref('users/' + p).once('value', snap => {
+            if(snap.exists()) alert("একাউন্ট আছে!");
+            else db.ref('users/' + p).set({ name: n, pass: s, profilePic: DEF_IMG }).then(() => {
+                localStorage.setItem("lb_phone", p); location.reload();
+            });
         });
+    }
 
+    function handleLogin() {
+        let p = document.getElementById('l-ph').value; let s = document.getElementById('l-ps').value;
+        db.ref('users/' + p).once('value', snap => {
+            if(snap.exists() && snap.val().pass === s) {
+                localStorage.setItem("lb_phone", p); location.reload();
+            } else alert("ভুল তথ্য!");
+        });
+    }
+
+    function startApp() {
+        showScr('scr-main');
+        db.ref('users/' + myPhone).on('value', snap => {
+            let d = snap.val();
+            document.getElementById('my-img').src = d.profilePic || DEF_IMG;
+            document.getElementById('my-name').innerText = d.name || myPhone;
+        });
         loadContacts();
     }
 
-    // কন্টাক্ট লিস্ট লোড (নেম সিঙ্ক সহ)
     function loadContacts() {
         db.ref('my_contacts/' + myPhone).on('value', snap => {
-            let listDiv = document.getElementById('chat-list');
-            listDiv.innerHTML = "";
-            
-            if(!snap.exists()) {
-                listDiv.innerHTML = "<p style='text-align:center; color:#999; margin-top:50px;'>কোন চ্যাট নেই। '+' বাটনে ক্লিক করে অ্যাড করুন।</p>";
-                return;
-            }
-
-            snap.forEach(child => {
-                let contactPhone = child.key;
-                db.ref('users/' + contactPhone).on('value', uSnap => {
-                    let uData = uSnap.val();
-                    if(!uData) return;
-
-                    // যদি আগে থেকেই লিস্টে থাকে তবে আপডেট হবে
-                    let existing = document.getElementById('card-' + contactPhone);
-                    let html = `
-                        <div class="contact-card" id="card-${contactPhone}" onclick="openChatWindow('${contactPhone}')">
-                            <div class="img-box">
-                                <img src="${uData.profilePic || DEFAULT_CAT}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
-                            </div>
-                            <div class="contact-info">
-                                <span class="contact-name">${uData.name || contactPhone}</span>
-                                <span class="contact-status">${contactPhone}</span>
-                            </div>
-                        </div>
-                    `;
-                    
-                    if(existing) {
-                        existing.outerHTML = html;
-                    } else {
-                        listDiv.innerHTML += html;
-                    }
+            let list = document.getElementById('chat-list'); list.innerHTML = "";
+            snap.forEach(c => {
+                db.ref('users/' + c.key).once('value', uSnap => {
+                    let u = uSnap.val();
+                    list.innerHTML += `<div class="c-card" onclick="openChat('${c.key}')">
+                        <img src="${u.profilePic || DEF_IMG}" class="p-img-sm">
+                        <div class="c-info"><span class="c-name">${u.name || c.key}</span><span class="c-phone">${c.key}</span></div>
+                    </div>`;
                 });
             });
         });
     }
 
-    // চ্যাট উইন্ডো ওপেন
-    function openChatWindow(phone) {
-        activeChat = phone;
-        document.getElementById('chat-window').style.display = 'flex';
-        
+    function openChat(phone) {
+        activeChat = phone; showScr('scr-chat');
         db.ref('users/' + phone).once('value', snap => {
             let d = snap.val();
-            document.getElementById('target-name').innerText = d.name || phone;
-            document.getElementById('target-phone').innerText = phone;
-            document.getElementById('target-img').src = d.profilePic || DEFAULT_CAT;
+            document.getElementById('t-display-name').innerText = (d.name || "User") + " (" + phone + ")";
+            document.getElementById('t-img').src = d.profilePic || DEF_IMG;
         });
-
-        listenMessages();
+        listenMsgs();
     }
 
-    // মেসেজ আদান-প্রদান (Encryption সহ)
-    function sendMessage() {
-        let text = document.getElementById('m-input').value;
-        if(!text) return;
-
-        let chatID = [myPhone, activeChat].sort().join("_");
-        
-        // মেসেজ এনকোড করা হচ্ছে (গোপন করার জন্য)
-        let encodedMsg = btoa(unescape(encodeURIComponent(text)));
-
-        db.ref('chats/' + chatID).push({
-            sender: myPhone,
-            msg: encodedMsg,
-            time: Date.now()
-        });
-
-        // অটোমেটিক কন্টাক্টে সেভ করা
+    function sendMsg() {
+        let t = document.getElementById('m-input').value; if(!t) return;
+        let cid = [myPhone, activeChat].sort().join("_");
+        let enc = btoa(unescape(encodeURIComponent(t)));
+        db.ref('chats/' + cid).push({ s: myPhone, m: enc, t: Date.now() });
         db.ref('my_contacts/' + myPhone + '/' + activeChat).set(true);
         db.ref('my_contacts/' + activeChat + '/' + myPhone).set(true);
-
         document.getElementById('m-input').value = "";
     }
 
-    function listenMessages() {
-        let chatID = [myPhone, activeChat].sort().join("_");
-        db.ref('chats/' + chatID).off();
-        db.ref('chats/' + chatID).on('value', snap => {
-            let box = document.getElementById('msg-box');
-            box.innerHTML = "";
+    function listenMsgs() {
+        let cid = [myPhone, activeChat].sort().join("_");
+        db.ref('chats/' + cid).on('value', snap => {
+            let box = document.getElementById('msg-box'); box.innerHTML = "";
             snap.forEach(m => {
-                let d = m.val();
-                let side = d.sender === myPhone ? 'me' : 'you';
-                
-                // মেসেজ ডিকোড করা
-                let decodedMsg = decodeURIComponent(escape(atob(d.msg)));
-                
-                box.innerHTML += `<div class="bubble ${side}">${decodedMsg}</div>`;
+                let d = m.val(); let side = d.s === myPhone ? 'me' : 'you';
+                let dec = decodeURIComponent(escape(atob(d.m)));
+                box.innerHTML += `<div class="bubble ${side}">${dec}</div>`;
             });
             box.scrollTop = box.scrollHeight;
         });
     }
 
-    // প্রোফাইল আপডেট
-    function showProfileEdit() {
-        hideScreens();
-        document.getElementById('profile-screen').style.display = 'flex';
-        db.ref('users/' + myPhone).once('value', snap => {
-            let d = snap.val();
-            document.getElementById('edit-name').value = d.name || "";
-            document.getElementById('edit-preview').src = d.profilePic || DEFAULT_CAT;
-        });
-    }
-
-    function updateProfile() {
-        let newName = document.getElementById('edit-name').value;
-        let newPic = document.getElementById('edit-pic').value;
-        
-        let updates = { name: newName };
-        if(newPic) updates.profilePic = newPic;
-
-        db.ref('users/' + myPhone).update(updates).then(() => {
-            alert("প্রোফাইল আপডেট হয়েছে!");
-            hideScreens();
-            document.getElementById('main-app').style.display = 'flex';
-        });
-    }
-
-    // অন্যান্য
-    function closeChat() { document.getElementById('chat-window').style.display = 'none'; }
-    
-    function addNewContact() {
-        let p = prompt("বন্ধুর ফোন নাম্বার দিন:");
+    function closeChat() { showScr('scr-main'); }
+    function logout() { localStorage.clear(); location.reload(); }
+    function addNew() { 
+        let p = prompt("বন্ধুর নাম্বার:");
         if(p && p !== myPhone) {
-            db.ref('users/' + p).once('value', snap => {
-                if(snap.exists()) {
-                    db.ref('my_contacts/' + myPhone + '/' + p).set(true);
-                    openChatWindow(p);
-                } else {
-                    alert("এই নাম্বারে কোন লাল বিলাই একাউন্ট নেই!");
-                }
+            db.ref('users/' + p).once('value', s => {
+                if(s.exists()) { db.ref('my_contacts/' + myPhone + '/' + p).set(true); openChat(p); }
+                else alert("নেই!");
             });
-        }
-    }
-
-    function logout() {
-        if(confirm("লগআউট করতে চান?")) {
-            localStorage.clear();
-            location.reload();
         }
     }
 </script>
