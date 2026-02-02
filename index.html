@@ -44,11 +44,11 @@
     <div id="splash">
         <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="anim-logo">
         <div class="kaiyum-brand">KAIYUM</div>
-        <div style="font-size: 10px; color: #aaa; margin-top: 5px; font-weight: bold;">SMART SECURITY ACTIVE</div>
+        <div style="font-size: 10px; color: #aaa; margin-top: 5px; font-weight: bold;">SMART LOGIN SYSTEM</div>
     </div>
 
     <div id="scr-login" class="screen">
-        <h2 style="margin-bottom: 15px;">Sign In</h2>
+        <h2 style="margin-bottom: 15px;">Welcome Back</h2>
         <input type="tel" id="l-ph">
         <input type="password" id="l-ps" placeholder="Password">
         <button class="btn" onclick="handleLogin()">Sign In</button>
@@ -56,20 +56,22 @@
     </div>
 
     <div id="scr-reg" class="screen">
-        <h3>Join KAIYUM</h3>
-        <input type="text" id="r-name" placeholder="Your Name">
+        <h3>Join Us</h3>
+        <input type="text" id="r-name" placeholder="Full Name">
         <input type="tel" id="r-ph">
         <input type="password" id="r-ps" placeholder="Set Password">
-        <button class="btn" onclick="startReg()">Get Verification Code</button>
+        <button class="btn" onclick="startReg()">Get Access Code</button>
         <p onclick="showScr('scr-login')" style="cursor:pointer; font-size:12px; margin-top:10px;">Back to Login</p>
     </div>
 
     <div id="scr-verify" class="screen">
-        <h3>Security Code</h3>
+        <h3>Verification</h3>
         <p style="font-size:12px; color:#666; text-align:center;">Ask <b>KAIYUM</b> for your code on WhatsApp.</p>
         <input type="number" id="v-otp" placeholder="Enter 4-Digit Code">
         <button class="btn" onclick="finishReg()">Verify & Start</button>
-        <a id="wa-link" href="#" target="_blank" style="color:#25D366; text-decoration:none; font-weight:bold; margin-top:15px;">💬 Message KAIYUM</a>
+        <a id="wa-link" href="#" target="_blank" style="color:#25D366; text-decoration:none; font-weight:bold; margin-top:15px; display: flex; align-items: center; gap: 5px;">
+            <span>💬</span> Message KAIYUM
+        </a>
     </div>
 
     <div id="scr-main" style="display:none; flex-direction:column; height:100%;">
@@ -78,9 +80,11 @@
                 <img id="my-img" src="" style="width:35px; border-radius:50%;">
                 <div style="margin-left:10px;"><span id="my-name" style="font-weight:bold;">Loading...</span></div>
             </div>
-            <div onclick="logout()" style="font-size:10px; cursor:pointer;">Logout</div>
+            <div onclick="logout()" style="font-size:10px; cursor:pointer; background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:10px;">Logout</div>
         </header>
-        <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#ccc;">Account Secured by KAIYUM</div>
+        <div style="flex:1; background:var(--bg); display:flex; align-items:center; justify-content:center; color:#ccc;">
+            System Secured by KAIYUM
+        </div>
     </div>
 </div>
 
@@ -89,6 +93,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const ADMIN_WA = "9660558687975";
+    const DEF_IMG = "https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg";
 
     let loginPhone, regPhone;
 
@@ -101,7 +106,7 @@
         loginPhone = window.intlTelInput(document.querySelector("#l-ph"), phoneOptions);
         regPhone = window.intlTelInput(document.querySelector("#r-ph"), phoneOptions);
 
-        // জিরো (0) তোলা বন্ধ কিন্তু ব্যাকএন্ডে পুরানো ডাটা চেক করার সিস্টেম
+        // জিরো ব্লক লজিক
         const blockZero = (el) => {
             el.addEventListener('input', function() {
                 if (this.value.startsWith('0')) {
@@ -127,65 +132,75 @@
         document.getElementById(id).style.display='flex';
     }
 
-    // স্মার্ট লগইন লজিক (পুরানো ইউজার হ্যান্ডলিং)
+    // স্মার্ট লগইন - জিরোসহ এবং জিরো ছাড়া ম্যাচিং লজিক
     function handleLogin() {
         if(!loginPhone.isValidNumber()) return alert("সঠিক নাম্বার দিন!");
         
-        const fullNumber = loginPhone.getNumber(); // যেমন: +88017...
-        const rawNumber = loginPhone.getRawDigits(); // যেমন: 17... (কোড ছাড়া)
+        const rawNumber = loginPhone.getRawDigits(); // যেমন: 5xxxxxxx (জিরো বাদে)
+        const fullNumber = loginPhone.getNumber(); // যেমন: +9665xxxxxxx
         const s = document.getElementById('l-ps').value;
 
-        // প্রথমে ফুল নাম্বার (+ কোডসহ) দিয়ে ডাটাবেসে চেক করবে
-        db.ref('users/' + btoa(fullNumber)).once('value', snap => {
-            if(snap.exists() && snap.val().pass === s) {
-                loginSuccess(fullNumber);
-            } else {
-                // যদি না পায়, তবে পুরানো স্টাইলে (0 ছাড়া শুধু নাম্বার) চেক করবে
-                db.ref('users/' + btoa(rawNumber)).once('value', oldSnap => {
-                    if(oldSnap.exists() && oldSnap.val().pass === s) {
-                        loginSuccess(rawNumber);
-                    } else {
-                        // যদি তাও না পায়, তবে '0' যোগ করে চেক করবে
-                        db.ref('users/' + btoa("0" + rawNumber)).once('value', oldZeroSnap => {
-                            if(oldZeroSnap.exists() && oldZeroSnap.val().pass === s) {
-                                loginSuccess("0" + rawNumber);
-                            } else {
-                                alert("অ্যাকাউন্ট পাওয়া যায়নি বা পাসওয়ার্ড ভুল!");
-                            }
-                        });
-                    }
-                });
+        // চেক করার ধাপগুলো:
+        // ১. জিরো ছাড়া চেক (যদি ডাটাবেসে 5xxx থাকে)
+        // ২. শুরুতে '০' যোগ করে চেক (যদি ডাটাবেসে 05xxx থাকে - পুরানোদের জন্য)
+        // ৩. কান্ট্রি কোড সহ চেক (+9665xxx)
+        
+        const checkKeys = [
+            btoa(rawNumber), 
+            btoa("0" + rawNumber), 
+            btoa(fullNumber)
+        ];
+
+        let currentIndex = 0;
+
+        function checkNext() {
+            if(currentIndex >= checkKeys.length) {
+                alert("অ্যাকাউন্ট পাওয়া যায়নি বা পাসওয়ার্ড ভুল!");
+                return;
             }
-        });
+
+            db.ref('users/' + checkKeys[currentIndex]).once('value', snap => {
+                if(snap.exists() && snap.val().pass === s) {
+                    localStorage.setItem("lb_phone", checkKeys[currentIndex]);
+                    location.reload();
+                } else {
+                    currentIndex++;
+                    checkNext();
+                }
+            });
+        }
+
+        checkNext();
     }
 
-    function loginSuccess(phoneId) {
-        localStorage.setItem("lb_phone", btoa(phoneId));
-        location.reload();
-    }
-
+    let tempReg = null;
     function startReg() {
         if(!regPhone.isValidNumber()) return alert("সঠিক নাম্বার দিন!");
         const fullNumber = regPhone.getNumber();
+        const rawNumber = regPhone.getRawDigits();
         const n = document.getElementById('r-name').value;
         const s = document.getElementById('r-ps').value;
 
-        // চেক করবে এই নাম্বার কান্ট্রি কোড সহ বা ছাড়া আগে থেকে আছে কি না
+        // চেক করবে এই নাম্বার জিরোসহ বা জিরো ছাড়া আগে আছে কি না
         db.ref('users/' + btoa(fullNumber)).once('value', snap => {
             if(snap.exists()) return alert("এই নাম্বার দিয়ে আগেই অ্যাকাউন্ট খোলা হয়েছে!");
             
-            let code = Math.floor(1000 + Math.random() * 9000).toString();
-            tempReg = { n, p: fullNumber, s, code };
-            db.ref('admin_verifications/' + btoa(fullNumber)).set({ name: n, code: code });
-            
-            document.getElementById('wa-link').href = `https://wa.me/${ADMIN_WA}?text=Hello KAIYUM, code for ${fullNumber}`;
-            showScr('scr-verify');
+            db.ref('users/' + btoa("0" + rawNumber)).once('value', oldSnap => {
+                if(oldSnap.exists()) return alert("এই নাম্বারটি ডাটাবেসে আগে থেকেই আছে!");
+
+                let code = Math.floor(1000 + Math.random() * 9000).toString();
+                tempReg = { n, p: fullNumber, s, code };
+                db.ref('admin_verifications/' + btoa(fullNumber)).set({ name: n, code: code });
+                
+                document.getElementById('wa-link').href = `https://wa.me/${ADMIN_WA}?text=Assalamu Alaikum KAIYUM, code for ${fullNumber}`;
+                showScr('scr-verify');
+            });
         });
     }
 
     function finishReg() {
         if(document.getElementById('v-otp').value === tempReg.code) {
-            db.ref('users/' + btoa(tempReg.p)).set({ name: tempReg.n, pass: tempReg.s, online: true });
+            db.ref('users/' + btoa(tempReg.p)).set({ name: tempReg.n, pass: tempReg.s, profilePic: DEF_IMG, online: true });
             localStorage.setItem("lb_phone", btoa(tempReg.p));
             location.reload();
         } else alert("ভুল কোড!");
@@ -193,7 +208,10 @@
 
     function loadUserData() {
         db.ref('users/' + localStorage.getItem("lb_phone")).on('value', snap => {
-            if(snap.exists()) document.getElementById('my-name').innerText = snap.val().name;
+            if(snap.exists()) {
+                document.getElementById('my-name').innerText = snap.val().name;
+                document.getElementById('my-img').src = snap.val().profilePic || DEF_IMG;
+            }
         });
     }
 
