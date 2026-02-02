@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KBOOK - Social Network</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #f0f2f5; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        #app-container { width: 100%; max-width: 500px; background: #fff; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        
+        /* Login/Register Screen */
+        .auth-screen { padding: 40px 20px; display: flex; flex-direction: column; gap: 15px; text-align: center; justify-content: center; height: 100%; }
+        .logo-text { font-size: 45px; font-weight: bold; color: #075e54; margin-bottom: 10px; }
+        input { padding: 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; background: #f5f6f7; }
+        .btn-main { background: #075e54; color: white; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        .switch-btn { color: #1877f2; cursor: pointer; font-weight: 600; margin-top: 15px; font-size: 14px; }
+
+        /* App UI */
+        header { background: #075e54; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .content-area { flex: 1; overflow-y: auto; background: #f0f2f5; padding-bottom: 70px; }
+        
+        .post-box { background: #fff; padding: 15px; margin-bottom: 10px; border-bottom: 1px solid #ddd; }
+        .post-input-row { display: flex; gap: 10px; align-items: center; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #075e54; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .post-input-row input { flex: 1; border-radius: 25px; padding: 10px 15px; border: 1px solid #ddd; background: #f0f2f5; }
+
+        .post-card { background: #fff; padding: 15px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .post-text { font-size: 15px; color: #050505; line-height: 1.4; margin-bottom: 10px; }
+        .post-actions { border-top: 1px solid #eee; padding-top: 10px; display: flex; justify-content: space-around; color: #65676b; font-weight: 600; font-size: 14px; }
+
+        nav { position: absolute; bottom: 0; width: 100%; background: #fff; border-top: 1px solid #ddd; display: flex; height: 60px; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #65676b; }
+        .nav-active { color: #075e54; border-top: 3px solid #075e54; }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <div id="auth-page" class="auth-screen">
+        <div class="logo-text">KBOOK</div>
+        <p id="auth-msg">স্বাগতম! একাউন্ট খুলে শুরু করুন।</p>
+        <input type="text" id="username" placeholder="ইউজারনেম দিন">
+        <input type="password" id="password" placeholder="পাসওয়ার্ড দিন">
+        <button class="btn-main" id="main-btn" onclick="handleAuth()">Login</button>
+        <div class="switch-btn" id="switch-txt" onclick="toggleAuth()">নতুন একাউন্ট খুলতে এখানে ক্লিক করুন</div>
+    </div>
+
+    <div id="main-app" style="display: none; flex-direction: column; height: 100%;">
+        <header>
+            <div class="header-logo">KBOOK</div>
+            <div onclick="location.reload()" style="cursor:pointer; font-size: 14px; border:1px solid #fff; padding:2px 8px; border-radius:10px;">Logout</div>
+        </header>
+
+        <div class="content-area">
+            <div class="post-box">
+                <div class="post-input-row">
+                    <div class="avatar" id="user-initial">U</div>
+                    <input type="text" id="status-input" placeholder="আপনার মনে কি আছে?" onkeypress="if(event.key==='Enter') makePost()">
+                </div>
+            </div>
+            <div id="feed-content">
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="avatar">K</div>
+                        <div style="font-size:14px;"><b>K-System</b><br><small>Official • Just now</small></div>
+                    </div>
+                    <div class="post-text">আমাদের নতুন ফিড সিস্টেমে আপনাকে স্বাগতম! এখানে আপনি পোস্ট করতে পারবেন।</div>
+                    <div class="post-actions"><span>👍 Like</span> <span>💬 Comment</span></div>
+                </div>
+            </div>
+        </div>
+
+        <nav>
+            <div class="nav-item nav-active"><span>🏠</span><span>Home</span></div>
+            <div class="nav-item" onclick="window.open('https://wa.me/9660558687975')"><span>📞</span><span>Support</span></div>
+        </nav>
+    </div>
+</div>
+
+<script>
+    let isLogin = true;
+    let currentUser = "";
+
+    function toggleAuth() {
+        isLogin = !isLogin;
+        document.getElementById('main-btn').innerText = isLogin ? "Login" : "Register Now";
+        document.getElementById('switch-txt').innerText = isLogin ? "নতুন একাউন্ট খুলতে এখানে ক্লিক করুন" : "আগের একাউন্ট থাকলে লগইন করুন";
+        document.getElementById('auth-msg').innerText = isLogin ? "স্বাগতম! লগইন করুন।" : "নতুন একাউন্ট তৈরি করুন।";
+    }
+
+    function handleAuth() {
+        const u = document.getElementById('username').value.trim().toLowerCase();
+        const p = document.getElementById('password').value.trim();
+        if(!u || !p) return alert("সব ঘর পূরণ করুন!");
+
+        let db = JSON.parse(localStorage.getItem('kbook_db')) || {};
+
+        if(isLogin) {
+            if(db[u] && db[u] === p) {
+                launchApp(u);
+            } else { alert("ভুল ইউজারনেম বা পাসওয়ার্ড!"); }
+        } else {
+            if(db[u]) { alert("এই ইউজারনেমটি আগেই নেয়া হয়েছে!"); }
+            else {
+                db[u] = p;
+                localStorage.setItem('kbook_db', JSON.stringify(db));
+                alert("একাউন্ট খোলা সফল! এখন লগইন করুন।");
+                toggleAuth();
+            }
+        }
+    }
+
+    function launchApp(user) {
+        currentUser = user;
+        document.getElementById('auth-page').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        document.getElementById('user-initial').innerText = user[0].toUpperCase();
+    }
+
+    function makePost() {
+        const txt = document.getElementById('status-input').value;
+        if(!txt.trim()) return;
+
+        const html = `<div class="post-card">
+            <div class="post-header">
+                <div class="avatar">${currentUser[0].toUpperCase()}</div>
+                <div style="font-size:14px;"><b>${currentUser}</b><br><small>Just now</small></div>
+            </div>
+            <div class="post-text">${txt}</div>
+            <div class="post-actions"><span>👍 Like</span> <span>💬 Comment</span></div>
+        </div>`;
+        document.getElementById('feed-content').insertAdjacentHTML('afterbegin', html);
+        document.getElementById('status-input').value = "";
+    }
+</script>
+</body>
+</html>
