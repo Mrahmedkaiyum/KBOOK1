@@ -3,196 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KBOOK Messenger Pro</title>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <title>KBOOK - Kesenger Pro Max Online</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
     <style>
-        :root { --fb-blue: #1877f2; --fb-bg: #f0f2f5; --fb-green: #42b72a; --gray: #65676b; }
-        body { font-family: Helvetica, Arial, sans-serif; margin: 0; background: var(--fb-bg); overflow: hidden; }
-        #app-wrap { width: 100%; max-width: 500px; margin: 0 auto; height: 100vh; background: white; position: relative; display: flex; flex-direction: column; }
+        :root { --leaf: #2E7D32; --light: #FFF9C4; --white: #ffffff; --chat-bg: #e5ddd5; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #f0f2f5; overflow: hidden; }
+        #app-wrap { width: 100%; max-width: 500px; margin: 0 auto; height: 100vh; background: var(--white); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.2); }
 
-        /* 1. Language & Splash */
-        .overlay { position: absolute; inset: 0; background: white; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        .btn-blue { background: var(--fb-blue); color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
+        /* Splash Animation */
+        #splash { position: absolute; inset: 0; background: var(--white); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeOut 2.5s forwards; }
+        .k-logo { width: 80px; height: 80px; background: var(--leaf); border-radius: 20px; color: white; display: flex; align-items: center; justify-content: center; font-size: 45px; font-weight: bold; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% {transform: scale(1);} 50% {transform: scale(1.1);} }
+        @keyframes fadeOut { 80% {opacity: 1;} 100% {opacity: 0; visibility: hidden;} }
 
-        /* 2. Success Pop-up with Messenger */
-        #congrats { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 8000; display: none; align-items: center; justify-content: center; }
-        .card { background: white; padding: 30px; border-radius: 15px; width: 80%; text-align: center; }
-        .admin-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--fb-blue); margin-bottom: 15px; }
+        /* Auth Screen */
+        .auth-screen { padding: 40px 20px; background: var(--light); height: 100%; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+        input { padding: 15px; margin: 10px 0; border: 1.5px solid var(--leaf); border-radius: 25px; outline: none; font-size: 16px; }
+        .btn-join { background: var(--leaf); color: white; padding: 15px; border: none; border-radius: 25px; font-weight: bold; font-size: 18px; cursor: pointer; transition: 0.3s; }
 
-        /* 3. Auth UI */
-        .auth-box { padding: 20px; display: flex; flex-direction: column; gap: 15px; margin-top: 50px; align-items: center; }
-        input { width: 90%; padding: 14px; border: 1px solid #dddfe2; border-radius: 8px; font-size: 16px; background: #f5f6f7; outline: none; }
+        /* Header & Tabs */
+        header { background: var(--white); padding: 15px; border-bottom: 2px solid var(--leaf); display: flex; justify-content: space-between; align-items: center; color: var(--leaf); font-weight: bold; font-size: 22px; }
+        .tabs { display: flex; border-bottom: 1px solid #ddd; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-size: 20px; color: #888; }
+        .tab.active { color: var(--leaf); border-bottom: 3px solid var(--leaf); background: var(--light); }
 
-        /* 4. Main App Tabs */
-        header { background: white; padding: 10px 15px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
-        .search-box { background: #f0f2f5; border-radius: 20px; padding: 5px 15px; display: flex; align-items: center; flex: 1; margin: 0 10px; }
-        .search-box input { background: transparent; border: none; padding: 5px; font-size: 14px; width: 100%; }
+        /* Chat Area */
+        #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: var(--chat-bg); }
+        .msg { padding: 10px 14px; border-radius: 15px; max-width: 80%; font-size: 15px; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .msg-in { background: white; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .msg-out { background: #dcf8c6; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg img, .msg video { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+        .s-name { font-size: 11px; font-weight: bold; color: var(--leaf); display: block; margin-bottom: 3px; }
 
-        .tabs { display: flex; background: white; border-bottom: 1px solid #ddd; height: 50px; }
-        .tab-item { flex: 1; display: flex; justify-content: center; align-items: center; font-size: 20px; cursor: pointer; color: var(--gray); position: relative; }
-        .tab-item.active { color: var(--fb-blue); border-bottom: 3px solid var(--fb-blue); }
+        /* Controls */
+        .controls { padding: 10px; background: white; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd; }
+        .icon { font-size: 24px; cursor: pointer; color: var(--leaf); }
+        #m-input { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 20px; outline: none; background: #f0f2f5; }
 
-        .content { flex: 1; overflow-y: auto; display: none; padding-bottom: 20px; }
-        .content.active { display: block; }
-        
-        /* Post Card */
-        .post { background: white; margin-top: 10px; padding: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .user-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .avt { width: 40px; height: 40px; border-radius: 50%; background: #ddd; object-fit: cover; }
-
-        /* Messenger Style */
-        .msg-box { padding: 15px; border-bottom: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
+        /* K-Assist Bubble */
+        #k-bubble { position: fixed; bottom: 85px; right: 20px; background: var(--leaf); color: white; padding: 10px 15px; border-radius: 20px 20px 0 20px; font-size: 13px; display: none; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
 <div id="app-wrap">
-    <div id="lang-page" class="overlay">
-        <h1 style="color:var(--fb-blue); font-size: 40px;">kbook</h1>
-        <div id="google_translate_element"></div>
-        <button class="btn-blue" onclick="startApp()" style="margin-top:20px;">Continue</button>
-    </div>
+    <div id="splash"><div class="k-logo">K</div><h2 style="color:var(--leaf)">KBOOK GLOBAL</h2></div>
 
-    <div id="congrats">
-        <div class="card">
-            <img src="admin.jpg" class="admin-img" onerror="this.src='https://via.placeholder.com/100/1877f2/FFFFFF?text=Admin'">
-            <h2 style="color:var(--fb-blue)">Welcome!</h2>
-            <p>Your account is ready.</p>
-            <button class="btn-blue" onclick="showTab('feed')">Go to Feed</button>
-            <button class="btn-blue" style="margin-top:10px; background:#0084ff;" onclick="showTab('messenger')">Open Messenger 💬</button>
-        </div>
-    </div>
-
-    <div id="auth-page" class="auth-box">
-        <div style="color:var(--fb-blue); font-size:40px; font-weight:bold;">kbook</div>
-        <div id="login-form" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:10px;">
-            <input type="text" id="log-id" placeholder="Mobile number or email">
-            <input type="password" id="log-pass" placeholder="Password">
-            <button class="btn-blue" onclick="handleLogin()">Log In</button>
-            <p onclick="toggleAuth()" style="color:var(--fb-blue); cursor:pointer;">Create New Account</p>
-        </div>
-        <div id="reg-form" style="width:100%; display:none; flex-direction:column; align-items:center; gap:10px;">
-            <input type="text" id="reg-name" placeholder="Full Name">
-            <input type="text" id="reg-contact" placeholder="Mobile number or email">
-            <input type="password" id="reg-pass" placeholder="New password">
-            <button class="btn-blue" style="background:var(--fb-green)" onclick="handleReg()">Sign Up</button>
-            <p onclick="toggleAuth()" style="color:var(--fb-blue); cursor:pointer;">Already have an account?</p>
-        </div>
+    <div id="auth-page" class="auth-screen">
+        <h1 style="color:var(--leaf); font-size: 40px; margin: 0;">kbook</h1>
+        <p>Your Leafy Social Space</p>
+        <input type="text" id="user-name" placeholder="Enter Your Name">
+        <button class="btn-join" onclick="startApp()">Enter Online</button>
     </div>
 
     <div id="main-app" style="display:none; flex-direction:column; height:100%;">
-        <header>
-            <div style="color:var(--fb-blue); font-size:24px; font-weight:bold;">kbook</div>
-            <div class="search-box">
-                <span>🔍</span>
-                <input type="text" placeholder="Search friends..." id="search-in" oninput="doSearch()">
-            </div>
-            <div onclick="location.reload()">🚪</div>
-        </header>
-
+        <header><span>kbook</span> <span onclick="kAssistVoice()">🤖</span></header>
         <div class="tabs">
-            <div class="tab-item active" onclick="showTab('feed')">🏠</div>
-            <div class="tab-item" onclick="showTab('video')">📺</div>
-            <div class="tab-item" onclick="showTab('messenger')">💬</div>
-            <div class="tab-item" onclick="showTab('notif')">🔔</div>
-            <div class="tab-item" onclick="showTab('menu')">☰</div>
+            <div class="tab active" onclick="switchSection('feed')">🏠</div>
+            <div class="tab" onclick="switchSection('chat')">💬</div>
+            <div class="tab">👤</div>
         </div>
 
-        <div id="feed" class="content active">
-            <div style="padding:15px; background:white; border-bottom:8px solid #ddd;">
-                <input type="text" placeholder="What's on your mind?" style="width:100%; border-radius:20px; background:#f0f2f5; border:none; padding:10px;">
-            </div>
-            <div id="post-list">
-                <div class="post">
-                    <div class="user-head"><div class="avt"></div><b>Admin Post</b></div>
-                    <p>Welcome to the global KBOOK network!</p>
-                </div>
+        <div id="feed-sec" style="flex:1; overflow-y:auto; padding:15px;">
+            <div style="background:white; padding:15px; border-left:5px solid var(--leaf);">
+                <b>Global Satellite Status:</b> <span style="color:green;">Online</span>
+                <p>Welcome to KBOOK. Everything you share is now real-time.</p>
             </div>
         </div>
 
-        <div id="video" class="content"><h3 style="padding:20px;">Videos</h3></div>
-        
-        <div id="messenger" class="content">
-            <h3 style="padding:15px; margin:0;">Chats</h3>
-            <div class="msg-box"><div class="avt"></div><div><b>Global Chat</b><br><small>Welcome to messenger!</small></div></div>
-        </div>
-
-        <div id="notif" class="content"><p style="padding:20px;">No new notifications.</p></div>
-
-        <div id="menu" class="content" style="padding:20px;">
-            <h3>Menu</h3>
-            <div style="background:#eee; padding:15px; border-radius:10px;">
-                <p><b>Name:</b> <span id="me-name">User</span></p>
-                <button class="btn-blue" onclick="editProfile()">Edit Profile</button>
+        <div id="chat-sec" style="display:none; flex-direction:column; height:100%;">
+            <div id="chat-box"></div>
+            <div class="controls">
+                <label for="f-in" class="icon">🖼️</label>
+                <input type="file" id="f-in" style="display:none" accept="image/*,video/*" onchange="uploadMedia(this)">
+                <span class="icon" onclick="sendLoc()">📍</span>
+                <input type="text" id="m-input" placeholder="Type a message...">
+                <span class="icon" id="mic" onclick="toggleMic()">🎤</span>
+                <span class="icon" onclick="sendTxt()">🚀</span>
             </div>
         </div>
     </div>
+
+    <div id="k-bubble"></div>
 </div>
 
-<audio id="tuk" src="https://www.soundjay.com/buttons/sounds/button-20.mp3"></audio>
-
 <script>
-    function googleTranslateElementInit() {
-        new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
-    }
+    // --- 1. FIREBASE SETUP ---
+    const firebaseConfig = { databaseURL: "https://kbook-5d175-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    let db = JSON.parse(localStorage.getItem('kbook_db')) || [];
-    let currentUser = null;
+    let myName = "";
 
-    function startApp() { document.getElementById('lang-page').style.display='none'; }
-    function toggleAuth() {
-        let l = document.getElementById('login-form');
-        let r = document.getElementById('reg-form');
-        l.style.display = l.style.display==='none'?'flex':'none';
-        r.style.display = r.style.display==='none'?'flex':'none';
-    }
-
-    function handleReg() {
-        let name = document.getElementById('reg-name').value;
-        let contact = document.getElementById('reg-contact').value;
-        let pass = document.getElementById('reg-pass').value;
-        if(!name || !contact || pass.length<6) return alert("Fill all fields correctly!");
-        
-        let user = {name, contact, pass, pic:''};
-        db.push(user);
-        localStorage.setItem('kbook_db', JSON.stringify(db));
-        currentUser = user;
-        document.getElementById('tuk').play();
-        document.getElementById('congrats').style.display = 'flex';
-    }
-
-    function handleLogin() {
-        let id = document.getElementById('log-id').value;
-        let ps = document.getElementById('log-pass').value;
-        let user = db.find(u => u.contact === id && u.pass === ps);
-        if(user) { currentUser = user; showTab('feed'); } 
-        else alert("Wrong credentials!");
-    }
-
-    function showTab(id) {
-        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+    // --- 2. AUTH & START ---
+    function startApp() {
+        myName = document.getElementById('user-name').value;
+        if(!myName) return alert("Please enter your name!");
         document.getElementById('auth-page').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
-        document.getElementById('congrats').style.display = 'none';
-        if(currentUser) document.getElementById('me-name').innerText = currentUser.name;
+        initKAssist();
+        listenMessages();
     }
 
-    function doSearch() {
-        let q = document.getElementById('search-in').value.toLowerCase();
-        if(!q) return;
-        let found = db.filter(u => u.name.toLowerCase().includes(q) || u.contact.includes(q));
-        if(found.length > 0) console.log("Found:", found[0].name);
+    // --- 3. K-ASSIST (Voice & Assist) ---
+    function initKAssist() {
+        const bubble = document.getElementById('k-bubble');
+        bubble.innerText = `Welcome ${myName}! I am K-Assist. Everything is live!`;
+        bubble.style.display = 'block';
+        setTimeout(() => bubble.style.display = 'none', 5000);
     }
 
-    function editProfile() {
-        let n = prompt("Enter new name:", currentUser.name);
-        if(n) {
-            currentUser.name = n;
-            localStorage.setItem('kbook_db', JSON.stringify(db));
-            document.getElementById('me-name').innerText = n;
-        }
+    function kAssistVoice() {
+        const msg = new SpeechSynthesisUtterance(`Hello ${myName}, I am K-Assist. I am monitoring your satellite connection. You are now online.`);
+        window.speechSynthesis.speak(msg);
+    }
+
+    // --- 4. CHAT FUNCTIONS ---
+    function switchSection(sec) {
+        document.getElementById('feed-sec').style.display = (sec==='feed'?'block':'none');
+        document.getElementById('chat-sec').style.display = (sec==='chat'?'flex':'none');
+    }
+
+    function sendTxt() {
+        const val = document.getElementById('m-input').value;
+        if(!val) return;
+        db.ref('messages').push({ sender: myName, content: val, type: 'text', time: Date.now() });
+        document.getElementById('m-input').value = "";
+    }
+
+    function uploadMedia(input) {
+        const file = input.files[0];
+        if(!file || file.size > 2000000) return alert("File too large (Max 2MB)");
+        const reader = new FileReader();
+        reader.onload = e => db.ref('messages').push({ sender: myName, content: e.target.result, type: file.type.startsWith('image')?'image':'video', time: Date.now() });
+        reader.readAsDataURL(file);
+    }
+
+    function sendLoc() {
+        navigator.geolocation.getCurrentPosition(pos => {
+            const url = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+            db.ref('messages').push({ sender: myName, content: url, type: 'loc', time: Date.now() });
+        });
+    }
+
+    let rec; let chunks = [];
+    function toggleMic() {
+        const micBtn = document.getElementById('mic');
+        if(!rec || rec.state === 'inactive') {
+            navigator.mediaDevices.getUserMedia({audio:true}).then(s => {
+                rec = new MediaRecorder(s); rec.start(); micBtn.innerText = "🛑";
+                rec.ondataavailable = e => chunks.push(e.data);
+                rec.onstop = () => {
+                    const reader = new FileReader();
+                    reader.onload = e => db.ref('messages').push({ sender: myName, content: e.target.result, type: 'audio', time: Date.now() });
+                    reader.readAsDataURL(new Blob(chunks)); chunks = []; micBtn.innerText = "🎤";
+                };
+            });
+        } else { rec.stop(); }
+    }
+
+    function listenMessages() {
+        db.ref('messages').limitToLast(30).on('value', snap => {
+            const box = document.getElementById('chat-box');
+            box.innerHTML = "";
+            snap.forEach(c => {
+                const d = c.val();
+                const side = d.sender === myName ? 'msg-out' : 'msg-in';
+                let html = `<span class="s-name">${d.sender}</span>`;
+                if(d.type==='text') html += d.content;
+                else if(d.type==='image') html += `<img src="${d.content}">`;
+                else if(d.type==='video') html += `<video controls src="${d.content}"></video>`;
+                else if(d.type==='audio') html += `<audio controls src="${d.content}"></audio>`;
+                else if(d.type==='loc') html += `📍 <a href="${d.content}" target="_blank">View My Location</a>`;
+                box.innerHTML += `<div class="msg ${side}">${html}</div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        });
     }
 </script>
 
