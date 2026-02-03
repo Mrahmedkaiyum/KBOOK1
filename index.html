@@ -3,227 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lal Bilai - Premium Security</title>
+    <title>Lal Bilai - Pro Messenger with Seen Status</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
-        :root { --red: #D32F2F; --white: #fff; --gray: #f8f9fa; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        :root { --red: #D32F2F; --white: #ffffff; --green: #4CAF50; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: #000; height: 100vh; display: flex; justify-content: center; }
         
-        #app-wrap { width: 100%; max-width: 400px; height: 100vh; background: var(--white); position: relative; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        #app-wrap { width: 100%; max-width: 400px; height: 100vh; background: var(--white); position: relative; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Splash Animation */
-        #splash { position: absolute; inset: 0; background: #fff; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .anim-logo { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--red); animation: bounce 2s infinite ease-in-out; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        /* Header */
+        header { background: var(--red); color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; z-index: 200; }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .profile-btn { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; overflow: hidden; }
+        .add-btn { font-size: 22px; cursor: pointer; background: rgba(255,255,255,0.2); width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
 
         /* Screens */
-        .screen { padding: 40px 30px; display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; position: absolute; inset: 0; background: #fff; z-index: 100; animation: fadeIn 0.5s ease; }
+        .screen { padding: 30px; display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; position: absolute; inset: 0; background: #fff; z-index: 100; }
         .visible { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        input { width: 100%; padding: 15px; border: 1.5px solid #eee; border-radius: 12px; outline: none; background: #fafafa; font-size: 16px; margin-bottom: 12px; transition: 0.3s; }
-        input:focus { border-color: var(--red); background: #fff; box-shadow: 0 0 8px rgba(211,47,47,0.1); }
-        
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--red); color: white; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; box-shadow: 0 4px 12px rgba(211,47,47,0.2); }
-        .btn:active { transform: scale(0.98); }
+        input, select { width: 100%; padding: 14px; border: 1.5px solid #eee; border-radius: 10px; outline: none; margin-bottom: 12px; font-size: 15px; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: var(--red); color: white; font-weight: bold; cursor: pointer; }
 
-        .link-text { font-size: 13px; color: var(--red); margin-top: 15px; cursor: pointer; font-weight: bold; text-decoration: underline; }
-
-        /* App Header */
-        header { background: var(--red); color: white; padding: 12px 15px; display: flex; align-items: center; gap: 12px; position: relative; z-index: 200; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .profile-btn { width: 42px; height: 42px; border-radius: 50%; border: 2px solid white; cursor: pointer; overflow: hidden; transition: 0.3s; }
-        .profile-btn:active { transform: scale(0.9); }
-        .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
+        /* Chat Window */
+        #chat-window { flex: 1; overflow-y: auto; background: #fdfdfd; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .msg-container { display: flex; flex-direction: column; max-width: 80%; }
+        .sent-container { align-self: flex-end; }
+        .rec-container { align-self: flex-start; }
         
-        /* Logout Menu */
-        #profile-menu { position: absolute; top: 65px; left: 15px; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); display: none; flex-direction: column; width: 180px; overflow: hidden; animation: slideDown 0.3s ease; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        #profile-menu button { background: none; border: none; padding: 14px; text-align: left; cursor: pointer; width: 100%; font-size: 14px; border-bottom: 1px solid #eee; transition: 0.2s; }
-        #profile-menu button:hover { background: #f5f5f5; }
-
-        /* Powered By Branding */
-        .powered-by { position: absolute; bottom: 15px; width: 100%; text-align: center; font-size: 12px; color: #ccc; font-weight: bold; letter-spacing: 1px; pointer-events: none; z-index: 50; }
+        .msg { padding: 10px; border-radius: 12px; font-size: 14px; position: relative; }
+        .sent { background: var(--red); color: #fff; }
+        .rec { background: #eee; color: #333; }
         
-        #chat-list { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ddd; background: #fdfdfd; padding: 20px; text-align: center; }
+        /* Seen/Unseen Status Dots */
+        .status-mark { font-size: 14px; font-weight: 900; align-self: flex-end; margin-top: 2px; color: var(--red); line-height: 1; }
+        
+        #typing-text { font-size: 11px; color: var(--red); height: 15px; padding-left: 20px; font-style: italic; }
+
+        /* Sidebar */
+        #side-panel { position: absolute; top: 0; left: -100%; width: 85%; height: 100%; background: #fff; z-index: 300; transition: 0.4s; box-shadow: 5px 0 15px rgba(0,0,0,0.2); padding: 25px; }
+        #side-panel.open { left: 0; }
+        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 250; display: none; }
+        .powered-by { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 10px; color: #ccc; }
     </style>
 </head>
 <body>
 
 <div id="app-wrap">
     <div class="powered-by">Powered by KAIYUM</div>
+    <div class="overlay" id="overlay" onclick="closeProfile()"></div>
 
-    <div id="splash">
-        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="anim-logo">
-        <h2 style="color:var(--red); margin-top:20px; letter-spacing: 3px; font-weight: 900;">LAL BILAI</h2>
+    <div id="splash" class="screen visible" style="z-index: 5000;">
+        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" style="width:80px; border-radius:50%; border:3px solid var(--red);">
+        <h2 style="color:var(--red); margin-top:15px;">LAL BILAI</h2>
     </div>
 
-    <div id="scr-login" class="screen visible">
-        <h2 style="margin-bottom: 25px; color: #333;">Sign In</h2>
-        <input type="number" id="l-ph" placeholder="Phone Number">
+    <div id="scr-login" class="screen">
+        <h2 id="lang-login-title">Sign In</h2>
+        <input type="number" id="l-ph" placeholder="Mobile Number">
         <input type="password" id="l-ps" placeholder="Password">
         <button class="btn" onclick="handleLogin()">Login</button>
-        <p class="link-text" onclick="showScr('scr-reg')">Create New Account</p>
-        <p class="link-text" style="color:#999; text-decoration: none; font-size: 11px;" onclick="showScr('scr-forgot')">Forgot Password?</p>
+        <p style="font-size:12px; margin-top:15px; cursor:pointer;" onclick="showScr('scr-reg')">Create Account</p>
     </div>
 
     <div id="scr-reg" class="screen">
-        <h2 style="margin-bottom: 20px;">Registration</h2>
-        <input type="text" id="r-name" placeholder="Your Full Name">
+        <h2 id="lang-reg-title">Registration</h2>
+        <input type="text" id="r-name" placeholder="Full Name">
         <input type="number" id="r-ph" placeholder="Mobile Number">
-        <input type="password" id="r-ps" placeholder="Set Password">
-        <button class="btn" onclick="sendToOTP()">Next (OTP Verification)</button>
-        <p class="link-text" onclick="showScr('scr-login')">Back to Login</p>
-    </div>
-
-    <div id="scr-otp" class="screen">
-        <h2 style="margin-bottom: 10px;">Verify Identity</h2>
-        <p style="font-size: 13px; color: #666; text-align: center; margin-bottom: 25px;">আপনার নাম্বারটি ভেরিফাই করতে এডমিনের কাছ থেকে কোডটি নিন।</p>
-        <input type="number" id="v-otp" placeholder="Enter 4-Digit Code" style="text-align: center; font-size: 24px; letter-spacing: 8px;">
-        <button class="btn" onclick="verifyAndRegister()">Verify & Register</button>
-        <div id="wa-link" style="margin-top: 20px; color: #25D366; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-            <span>💬 Get Code from Admin</span>
-        </div>
-        <p class="link-text" onclick="showScr('scr-reg')" style="color:#aaa;">Change Number</p>
-    </div>
-
-    <div id="scr-forgot" class="screen">
-        <h2 style="margin-bottom: 20px;">Recovery</h2>
-        <input type="number" id="f-ph" placeholder="Registered Phone Number">
-        <button class="btn" onclick="handleForgot()">Request Password</button>
-        <p class="link-text" onclick="showScr('scr-login')">Back to Login</p>
+        <input type="password" id="r-ps" placeholder="Password">
+        <button class="btn" onclick="sendToOTP()">Next</button>
     </div>
 
     <div id="scr-main" style="display:none; flex-direction:column; height:100%;">
         <header>
-            <div class="profile-btn" onclick="toggleMenu()">
-                <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg">
+            <div class="header-left">
+                <div class="profile-btn" onclick="openProfile()">
+                    <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" width="100%">
+                </div>
+                <div class="add-btn" onclick="addUser()">+</div>
             </div>
-            <span style="font-weight: bold; letter-spacing: 1px;">Lal Bilai Chat</span>
-            <div id="profile-menu">
-                <button onclick="alert('Profile settings coming soon!')">Settings</button>
-                <button onclick="logout()" style="color: red; font-weight: bold;">Logout (লগ আউট)</button>
+            <div style="text-align: center;">
+                <span id="target-name" style="font-size:14px; font-weight:bold;">Lal Bilai</span><br>
+                <span id="target-status" style="font-size:9px;"></span>
             </div>
+            <span onclick="logout()" style="font-size:11px; cursor:pointer;">Logout</span>
         </header>
-        
-        <div id="chat-list">
-            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" style="width: 80px; opacity: 0.1; margin-bottom: 15px;">
-            <p>Welcome! Your account is now active.</p>
+
+        <div id="chat-window"></div>
+        <div id="typing-text"></div>
+
+        <div class="chat-input-area" id="input-area" style="padding:10px; display:none; background:#fff; border-top:1px solid #eee;">
+            <input type="text" id="msg-input" placeholder="Type..." style="margin-bottom:0; border-radius:20px;" oninput="updateTyping(true)" onblur="updateTyping(false)">
+            <button class="btn" style="width:70px; margin-top:5px; height:45px;" onclick="sendMsg()">Send</button>
         </div>
+    </div>
+
+    <div id="side-panel">
+        <h3 id="lang-profile-head">Settings</h3>
+        <input type="text" id="up-name" placeholder="Update Name">
+        <button class="btn" onclick="updateName()" style="padding:8px; margin-bottom:15px;">Update</button>
+        
+        <label style="font-size:12px;">Language / ভাষা:</label>
+        <select id="lang-select" onchange="changeLang()">
+            <option value="en">English</option>
+            <option value="bn">বাংলা</option>
+        </select>
+        <button class="btn" style="margin-top:30px; background:#eee; color:#333;" onclick="closeProfile()">Close</button>
     </div>
 </div>
 
 <script>
-    // Firebase Setup
     const firebaseConfig = { databaseURL: "https://kbook-5d175-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const ADMIN_PH = "9660558687975"; // আপনার হোয়াটসঅ্যাপ
-    let tempUser = null;
+    let myPhone = localStorage.getItem("lb_phone") ? atob(localStorage.getItem("lb_phone")) : null;
+    let activeChat = null;
+    let currentLang = localStorage.getItem("lb_lang") || "en";
+    const notifySound = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
 
-    window.onload = () => {
-        setTimeout(() => {
-            document.getElementById('splash').style.display = 'none';
-            if(localStorage.getItem("lb_phone")) showApp();
-        }, 2500);
+    const dict = {
+        en: { typing: "is typing...", login: "Sign In", profile: "Profile Settings", add: "Add Friend" },
+        bn: { typing: "লিখছে...", login: "প্রবেশ করুন", profile: "প্রোফাইল সেটিংস", add: "বন্ধু যোগ করুন" }
     };
 
-    function showScr(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
-        document.getElementById(id).classList.add('visible');
+    window.onload = () => {
+        if (Notification.permission !== "granted") Notification.requestPermission();
+        applyLang();
+        setTimeout(() => {
+            document.getElementById('splash').style.display = 'none';
+            if(myPhone) { showApp(); setOnlineStatus(true); }
+            else showScr('scr-login');
+        }, 2000);
+    };
+
+    function showApp() {
+        showScr('scr-main');
+        document.getElementById('scr-main').style.display = 'flex';
+        db.ref('users/' + btoa(myPhone)).once('value', snap => {
+            if(snap.exists()) document.getElementById('up-name').value = snap.val().name;
+        });
     }
 
-    function toggleMenu() {
-        const menu = document.getElementById('profile-menu');
-        menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+    function setOnlineStatus(status) {
+        if(!myPhone) return;
+        db.ref('status/' + myPhone).set(status ? "online" : "offline");
+        db.ref('status/' + myPhone).onDisconnect().set("offline");
     }
 
-    window.onclick = function(e) {
-        if (!e.target.closest('.profile-btn')) {
-            document.getElementById('profile-menu').style.display = 'none';
-        }
+    function applyLang() {
+        document.getElementById('lang-login-title').innerText = dict[currentLang].login;
+        document.getElementById('lang-profile-head').innerText = dict[currentLang].profile;
+        document.getElementById('lang-select').value = currentLang;
     }
 
-    // Login (No OTP)
+    function changeLang() {
+        currentLang = document.getElementById('lang-select').value;
+        localStorage.setItem("lb_lang", currentLang);
+        applyLang();
+    }
+
+    // --- Chat & Seen Status Logic ---
+    function addUser() {
+        const target = prompt(dict[currentLang].add);
+        if(!target) return;
+        db.ref('users/' + btoa(target)).once('value', snap => {
+            if(snap.exists()) {
+                activeChat = target;
+                document.getElementById('target-name').innerText = snap.val().name;
+                document.getElementById('input-area').style.display = 'flex';
+                listenForChat();
+            } else alert("Not Registered!");
+        });
+    }
+
+    function listenForChat() {
+        const chatId = [myPhone, activeChat].sort().join("_");
+        
+        // Typing Status
+        db.ref('typing/' + activeChat + '/' + myPhone).on('value', snap => {
+            document.getElementById('typing-text').innerText = snap.val() ? dict[currentLang].typing : "";
+        });
+
+        // Online Status
+        db.ref('status/' + activeChat).on('value', snap => {
+            const status = snap.val() || "offline";
+            document.getElementById('target-status').innerHTML = status === 'online' ? '<span style="color:green">● Online</span>' : 'Offline';
+        });
+
+        // Listen for new messages
+        db.ref('chats/' + chatId).on('value', snap => {
+            const win = document.getElementById('chat-window');
+            win.innerHTML = "";
+            snap.forEach(child => {
+                const m = child.val();
+                const isMine = m.sender === myPhone;
+                
+                // Mark as seen if message is not mine and I am looking at the chat
+                if(!isMine && m.seen === false) {
+                    db.ref('chats/' + chatId + '/' + child.key).update({ seen: true });
+                }
+
+                const statusDot = isMine ? (m.seen ? ".." : ".") : "";
+                
+                win.innerHTML += `
+                    <div class="msg-container ${isMine ? 'sent-container' : 'rec-container'}">
+                        <div class="msg ${isMine ? 'sent' : 'rec'}">${m.text}</div>
+                        ${isMine ? `<span class="status-mark">${statusDot}</span>` : ''}
+                    </div>`;
+            });
+            win.scrollTop = win.scrollHeight;
+        });
+
+        // Notifications
+        db.ref('chats/' + chatId).limitToLast(1).on('child_added', snap => {
+            const m = snap.val();
+            if(m.sender === activeChat && m.seen === false) {
+                notifySound.play();
+                if(Notification.permission === "granted") {
+                    new Notification("Lal Bilai", { body: m.text });
+                }
+            }
+        });
+    }
+
+    function sendMsg() {
+        const txt = document.getElementById('msg-input').value;
+        if(!txt || !activeChat) return;
+        const chatId = [myPhone, activeChat].sort().join("_");
+        db.ref('chats/' + chatId).push({
+            sender: myPhone,
+            text: txt,
+            seen: false,
+            time: Date.now()
+        });
+        document.getElementById('msg-input').value = "";
+        updateTyping(false);
+    }
+
+    function updateTyping(isTyping) {
+        if(activeChat) db.ref('typing/' + myPhone + '/' + activeChat).set(isTyping);
+    }
+
     function handleLogin() {
         const ph = document.getElementById('l-ph').value;
         const ps = document.getElementById('l-ps').value;
-        if(!ph || !ps) return alert("Please fill all fields!");
-
         db.ref('users/' + btoa(ph)).once('value', snap => {
             if(snap.exists() && snap.val().pass === ps) {
                 localStorage.setItem("lb_phone", btoa(ph));
+                myPhone = ph;
+                setOnlineStatus(true);
                 showApp();
-            } else alert("Wrong number or password!");
+            } else alert("Error!");
         });
     }
 
-    // Registration - Send only Phone & OTP to Admin
-    function sendToOTP() {
-        const name = document.getElementById('r-name').value;
-        const ph = document.getElementById('r-ph').value;
-        const ps = document.getElementById('r-ps').value;
-
-        if(!name || !ph || !ps) return alert("Fill all fields!");
-
-        const generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
-        tempUser = { name, ph, ps, otp: generatedOTP };
-
-        // ফায়ারবেসে শুধু আপনার জন্য পাঠানো হচ্ছে
-        db.ref('otp_requests/' + ph).set({
-            phone: ph,
-            code: generatedOTP
-        });
-
-        // WhatsApp Link
-        const msg = `Assalamu Alaikum KAIYUM,\nI want to register on Lal Bilai.\nMy Number: ${ph}\nPlease give me the OTP code.`;
-        document.getElementById('wa-link').onclick = () => {
-            window.open(`https://wa.me/${ADMIN_PH}?text=${encodeURIComponent(msg)}`, '_blank');
-        };
-
-        showScr('scr-otp');
-    }
-
-    // Verify & Create Account
-    function verifyAndRegister() {
-        const inputOTP = document.getElementById('v-otp').value;
-        if(inputOTP === tempUser.otp) {
-            const userKey = btoa(tempUser.ph);
-            db.ref('users/' + userKey).set({
-                name: tempUser.name,
-                pass: tempUser.ps,
-                phone: tempUser.ph,
-                created: Date.now()
-            }).then(() => {
-                db.ref('otp_requests/' + tempUser.ph).remove();
-                localStorage.setItem("lb_phone", userKey);
-                showApp();
-            });
-        } else alert("Invalid OTP Code!");
-    }
-
-    function handleForgot() {
-        const ph = document.getElementById('f-ph').value;
-        db.ref('users/' + btoa(ph)).once('value', snap => {
-            if(snap.exists()) {
-                window.open(`https://wa.me/${ADMIN_PH}?text=Recover password for ${ph}`);
-            } else alert("No account found. Please register.");
-        });
-    }
-
-    function showApp() {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
-        document.getElementById('scr-main').style.display = 'flex';
-    }
-
-    function logout() {
-        localStorage.clear();
-        location.reload();
-    }
+    function openProfile() { document.getElementById('side-panel').classList.add('open'); document.getElementById('overlay').style.display = 'block'; }
+    function closeProfile() { document.getElementById('side-panel').classList.remove('open'); document.getElementById('overlay').style.display = 'none'; }
+    function logout() { setOnlineStatus(false); localStorage.clear(); location.reload(); }
+    function showScr(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible')); document.getElementById(id).classList.add('visible'); }
 </script>
 </body>
 </html>
