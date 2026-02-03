@@ -1,271 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lal Bilai Messenger</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    
-    <style>
-        :root { --main: #25D366; --dark: #075E54; --bg: #ffffff; --light-bg: #f0f2f5; --red: #D32F2F; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: #000; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
-        
-        #app-wrap { width: 100%; max-width: 450px; height: 100vh; background: var(--bg); position: relative; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lal Bilai Messenger</title>
 
-        /* Custom Alert */
-        #custom-alert { position: absolute; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .alert-box { background: #fff; padding: 20px; border-radius: 15px; width: 100%; text-align: center; border-top: 5px solid var(--main); }
+<!-- Firebase v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-        /* Screens */
-        .screen { display: none; height: 100%; width: 100%; position: absolute; top: 0; left: 0; background: #fff; z-index: 100; flex-direction: column; }
-        .visible { display: flex; }
-        .header { background: var(--dark); color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; }
+<style>
+:root{
+  --green:#25D366;
+  --dark:#075E54;
+  --bg:#f0f2f5;
+}
+*{box-sizing:border-box;font-family:Segoe UI}
+body{margin:0;background:#000;display:flex;justify-content:center}
+#app{max-width:420px;width:100%;height:100vh;background:#fff;position:relative}
 
-        /* Form Styling */
-        .form-container { padding: 30px; display: flex; flex-direction: column; gap: 15px; justify-content: center; height: 100%; }
-        input { padding: 14px; border-radius: 10px; border: 1px solid #ddd; outline: none; font-size: 15px; background: var(--light-bg); transition: 0.3s; }
-        input:focus { border-color: var(--main); background: #fff; }
-        .btn { padding: 15px; border-radius: 10px; border: none; background: var(--main); color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
-        .btn:active { transform: scale(0.98); }
+/* screens */
+.screen{display:none;height:100%;flex-direction:column}
+.show{display:flex}
 
-        /* Chat Styles */
-        #chat-win { flex: 1; overflow-y: auto; padding: 15px; background: #e5ddd5; display: flex; flex-direction: column; gap: 5px; }
-        .msg { max-width: 75%; padding: 8px 12px; border-radius: 10px; font-size: 14px; position: relative; line-height: 1.4; }
-        .sent { align-self: flex-end; background: #dcf8c6; border-top-right-radius: 0; }
-        .rec { align-self: flex-start; background: #fff; border-top-left-radius: 0; }
-        .tick { font-size: 10px; margin-left: 5px; color: #999; }
-        .seen { color: #34B7F1 !important; }
+/* splash */
+#splash{justify-content:center;align-items:center}
+#splash img{width:120px;border-radius:50%}
+#splash p{margin-top:15px;color:#666}
 
-        /* Bottom Nav */
-        nav { height: 65px; background: #fff; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center; z-index: 500; }
-        .nav-item { cursor: pointer; text-align: center; color: #888; transition: 0.3s; }
-        .nav-active { color: var(--main); font-weight: bold; }
+/* header */
+.header{background:var(--dark);color:#fff;padding:14px;font-weight:bold}
 
-        /* Splash */
-        #splash { background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .cat-logo { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--main); }
-        .powered { font-size: 12px; color: #888; margin-top: 20px; font-weight: bold; }
-    </style>
+/* auth */
+.form{padding:25px;display:flex;flex-direction:column;gap:12px}
+input{padding:12px;border-radius:8px;border:1px solid #ccc}
+button{padding:12px;border:none;border-radius:8px;background:var(--green);color:#fff;font-weight:bold}
+
+/* chat */
+#chatWin{flex:1;overflow-y:auto;background:#e5ddd5;padding:10px}
+.msg{max-width:75%;padding:8px 10px;border-radius:10px;font-size:14px}
+.me{background:#dcf8c6;margin-left:auto}
+.you{background:#fff}
+.tick{font-size:10px;margin-left:4px;color:#999}
+.seen{color:#34b7f1}
+
+.bottom{display:flex;padding:8px;background:#f0f0f0}
+.bottom input{flex:1;border-radius:20px}
+.bottom button{margin-left:6px;border-radius:50%;width:45px}
+
+/* nav */
+nav{display:flex;border-top:1px solid #ddd}
+nav div{flex:1;text-align:center;padding:10px;cursor:pointer}
+.active{color:var(--green);font-weight:bold}
+</style>
 </head>
+
 <body>
+<div id="app">
 
-<div id="app-wrap">
-    <div id="custom-alert">
-        <div class="alert-box">
-            <p id="alert-msg" style="margin-bottom: 20px; color: #333;"></p>
-            <button class="btn" style="width: 100px;" onclick="closeAlert()">Ok</button>
-        </div>
-    </div>
+<!-- SPLASH -->
+<div id="splash" class="screen show">
+  <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg">
+  <p>Powered by Kaiyum</p>
+</div>
 
-    <div id="splash" class="screen visible">
-        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="cat-logo">
-        <div class="powered">Powered by KAIYUM</div>
-    </div>
+<!-- AUTH -->
+<div id="auth" class="screen">
+  <div class="form">
+    <h3 id="authTitle">Login</h3>
+    <input id="name" placeholder="Your Name (Register only)">
+    <input id="phone" type="number" placeholder="Mobile (10–11 digit)"
+     oninput="if(this.value.length>11)this.value=this.value.slice(0,11)">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="auth()">Continue</button>
+    <small onclick="toggle()" style="cursor:pointer">No account? Register</small>
+  </div>
+</div>
 
-    <div id="scr-auth" class="screen">
-        <div class="form-container">
-            <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:20px;">
-                <span onclick="setLang('en')" style="cursor:pointer; font-weight:bold;">EN</span> | 
-                <span onclick="setLang('bn')" style="cursor:pointer; font-weight:bold;">বাং</span>
-            </div>
-            <h2 id="auth-title">Login</h2>
-            <input type="number" id="auth-ph" placeholder="Mobile (Max 11 digit)" oninput="if(this.value.length > 11) this.value = this.value.slice(0,11);">
-            <input type="password" id="auth-ps" placeholder="Password">
-            <button class="btn" onclick="handleAuth()" id="btn-auth">Sign In</button>
-            <p id="auth-switch" onclick="toggleAuthMode()" style="text-align:center; cursor:pointer; font-size:14px; color:var(--dark);">Need an account? Register</p>
-            <p onclick="forgotPass()" style="text-align:center; font-size:12px; color:var(--red); cursor:pointer;">Forgot Password?</p>
-        </div>
-    </div>
+<!-- MAIN -->
+<div id="main" class="screen">
+  <div class="header">Lal Bilai</div>
+  <div id="chatList" style="flex:1;overflow:auto"></div>
+  <nav>
+    <div class="active" onclick="tab('chat')">💬 Chat</div>
+    <div onclick="tab('profile')">👤 Profile</div>
+  </nav>
+</div>
 
-    <div id="scr-otp" class="screen">
-        <div class="form-container">
-            <h3>Verify OTP</h3>
-            <p style="font-size:12px; color:#666;">Check your admin for code</p>
-            <input type="number" id="otp-val" placeholder="4 Digit Code" style="text-align:center; font-size:24px; letter-spacing:10px;">
-            <button class="btn" onclick="verifyOTP()">Confirm</button>
-        </div>
-    </div>
+<!-- CHAT -->
+<div id="chat" class="screen">
+  <div class="header" onclick="back()">⬅ Back</div>
+  <div id="chatWin"></div>
+  <div class="bottom">
+    <input id="msg" placeholder="Type message">
+    <button onclick="send()">🐱</button>
+  </div>
+</div>
 
-    <div id="scr-main" class="screen">
-        <div class="header">
-            <span id="main-title">Lal Bilai</span>
-            <span onclick="openSearch()">➕</span>
-        </div>
-        <div id="contact-list" style="flex:1; overflow-y:auto; padding:10px;"></div>
-        <nav>
-            <div class="nav-item nav-active" onclick="switchMainTab('chats')">💬 <br><small>Chats</small></div>
-            <div class="nav-item" onclick="switchMainTab('settings')">⚙️ <br><small>Settings</small></div>
-        </nav>
-    </div>
-
-    <div id="scr-chat" class="screen">
-        <div class="header">
-            <span onclick="closeChat()">⬅️</span>
-            <div style="flex:1; margin-left:10px;">
-                <div id="chat-user-name">...</div>
-                <div id="chat-status" style="font-size:10px; font-weight:normal;">offline</div>
-            </div>
-        </div>
-        <div id="chat-win"></div>
-        <div style="padding:10px; background:#f0f0f0; display:flex; gap:10px; align-items:center;">
-            <input type="text" id="msg-input" placeholder="Type..." style="margin-bottom:0; border-radius:20px;">
-            <button class="btn" style="width:60px; padding:10px; border-radius:50%;" onclick="sendMsg()">🐱</button>
-        </div>
-    </div>
 </div>
 
 <script>
-    // --- Configuration ---
-    const firebaseConfig = { databaseURL: "https://kbook-5d175-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+// FIREBASE (তোর আগেরটাই)
+firebase.initializeApp({
+  databaseURL:"https://kbook-5d175-default-rtdb.firebaseio.com/"
+});
+const db=firebase.database();
 
-    let lang = 'en';
-    let isLoginMode = true;
-    let myPhone = localStorage.getItem("lb_phone") ? atob(localStorage.getItem("lb_phone")) : null;
-    let activeChat = null;
-    let tempUser = null;
+// GLOBAL
+let myPhone=localStorage.lb?atob(localStorage.lb):null;
+let isLogin=true,chatWith=null;
 
-    const t = {
-        en: { login: "Login", reg: "Register", need: "Need account? Register", have: "Have account? Login", ph: "Mobile Number", ps: "Password", welcome: "Welcome back to Lal Bilai!" },
-        bn: { login: "লগইন", reg: "রেজিস্ট্রেশন", need: "একাউন্ট নেই? রেজিস্ট্রেশন", have: "একাউন্ট আছে? লগইন", ph: "মোবাইল নাম্বার", ps: "পাসওয়ার্ড", welcome: "লাল বিলাইতে আপনাকে স্বাগতম!" }
-    };
+// START
+setTimeout(()=>{
+ if(myPhone){loadMain()}
+ else show('auth')
+},2000);
 
-    // --- UI Controls ---
-    function showAlert(msg) { document.getElementById('alert-msg').innerText = msg; document.getElementById('custom-alert').style.display = 'flex'; }
-    function closeAlert() { document.getElementById('custom-alert').style.display = 'none'; }
-    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible')); document.getElementById(id).classList.add('visible'); }
+// UI
+function show(id){
+ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'))
+ document.getElementById(id).classList.add('show')
+}
+function toggle(){
+ isLogin=!isLogin
+ document.getElementById('authTitle').innerText=isLogin?'Login':'Register'
+}
+function tab(t){}
+function back(){show('main')}
 
-    window.onload = () => {
-        setTimeout(() => {
-            if(myPhone) { setupApp(); }
-            else { showScreen('scr-auth'); setLang('en'); }
-        }, 2500);
-    };
+// AUTH
+function auth(){
+ let p=phone.value,ps=pass.value,n=name.value
+ if(p.length<10)return alert("Invalid number")
 
-    function setLang(l) {
-        lang = l;
-        document.getElementById('auth-title').innerText = isLoginMode ? t[lang].login : t[lang].reg;
-        document.getElementById('auth-ph').placeholder = t[lang].ph;
-        document.getElementById('auth-ps').placeholder = t[lang].ps;
-        document.getElementById('btn-auth').innerText = isLoginMode ? t[lang].login : t[lang].reg;
-        document.getElementById('auth-switch').innerText = isLoginMode ? t[lang].need : t[lang].have;
-    }
+ let key=btoa(p)
+ if(isLogin){
+  db.ref('users/'+key).once('value',s=>{
+   if(s.exists()&&s.val().pass===ps){
+    localStorage.lb=btoa(p);location.reload()
+   }else alert("Wrong info")
+  })
+ }else{
+  if(!n)return alert("Name required")
+  db.ref('users/'+key).set({
+   name:n,phone:p,pass:ps,time:Date.now()
+  }).then(()=>{
+   localStorage.lb=btoa(p);location.reload()
+  })
+ }
+}
 
-    function toggleAuthMode() { isLoginMode = !isLoginMode; setLang(lang); }
+// MAIN
+function loadMain(){
+ show('main')
+ db.ref('status/'+myPhone).set(true)
+ db.ref('status/'+myPhone).onDisconnect().set(false)
+}
 
-    // --- Auth Logic ---
-    function handleAuth() {
-        const ph = document.getElementById('auth-ph').value;
-        const ps = document.getElementById('auth-ps').value;
-        if(ph.length < 10) return showAlert("Invalid Phone Number");
-
-        if(isLoginMode) {
-            db.ref('users/' + btoa(ph)).once('value', snap => {
-                if(snap.exists() && snap.val().pass === ps) {
-                    localStorage.setItem("lb_phone", btoa(ph));
-                    location.reload();
-                } else showAlert("Wrong credentials!");
-            });
-        } else {
-            const code = Math.floor(1000 + Math.random() * 9000).toString();
-            tempUser = { ph, ps, code };
-            db.ref('otp_requests/' + ph).set({ ph, code, time: Date.now() }).then(() => {
-                showScreen('scr-otp');
-                window.open(`https://wa.me/9660558687975?text=Hi, Give me OTP for ${ph}`);
-            });
-        }
-    }
-
-    function verifyOTP() {
-        const input = document.getElementById('otp-val').value;
-        if(input === tempUser.code) {
-            db.ref('users/' + btoa(tempUser.ph)).set({ phone: tempUser.ph, pass: tempUser.ps, name: "User_"+tempUser.ph.slice(-4), joined: Date.now() }).then(() => {
-                showAlert(t[lang].welcome);
-                localStorage.setItem("lb_phone", btoa(tempUser.ph));
-                location.reload();
-            });
-        } else showAlert("Wrong OTP");
-    }
-
-    function forgotPass() {
-        const ph = document.getElementById('auth-ph').value;
-        if(!ph) return showAlert("Enter number first");
-        db.ref('users/' + btoa(ph)).once('value', snap => {
-            if(snap.exists()) {
-                const code = Math.floor(1000 + Math.random() * 9000).toString();
-                tempUser = { ph, mode: 'reset', code };
-                db.ref('otp_requests/' + ph).set({ ph, code, time: Date.now() }).then(() => {
-                    showScreen('scr-otp');
-                });
-            } else showAlert("Number not registered!");
-        });
-    }
-
-    // --- Chat Logic ---
-    function setupApp() {
-        showScreen('scr-main');
-        updateStatus(true);
-        loadChatList();
-    }
-
-    function openSearch() {
-        const target = prompt("Enter Friend's Mobile:");
-        if(!target) return;
-        db.ref('users/' + btoa(target)).once('value', snap => {
-            if(snap.exists()) {
-                const u = snap.val();
-                if(confirm(`Add ${u.name}?`)) {
-                    startChat(target, u.name);
-                }
-            } else showAlert("User not found!");
-        });
-    }
-
-    function startChat(ph, name) {
-        activeChat = ph;
-        document.getElementById('chat-user-name').innerText = name;
-        showScreen('scr-chat');
-        const chatId = [myPhone, ph].sort().join("_");
-        
-        // Listen Status
-        db.ref('status/' + ph).on('value', s => {
-            document.getElementById('chat-status').innerText = s.val() ? 'online' : 'offline';
-            document.getElementById('chat-status').style.color = s.val() ? '#25D366' : '#999';
-        });
-
-        // Listen Messages
-        db.ref('chats/' + chatId).on('value', snap => {
-            const win = document.getElementById('chat-win');
-            win.innerHTML = "";
-            snap.forEach(mNode => {
-                const m = mNode.val();
-                const isMe = m.sender === myPhone;
-                if(!isMe && !m.seen) db.ref('chats/'+chatId+'/'+mNode.key).update({seen: true});
-                
-                win.innerHTML += `
-                    <div class="msg ${isMe ? 'sent' : 'rec'}">
-                        ${m.text}
-                        ${isMe ? `<span class="tick ${m.seen ? 'seen' : ''}">✔✔</span>` : ''}
-                    </div>`;
-            });
-            win.scrollTop = win.scrollHeight;
-        });
-    }
-
-    function sendMsg() {
-        const txt = document.getElementById('msg-input').value;
-        if(!txt || !activeChat) return;
-        const chatId = [myPhone, activeChat].sort().join("_");
-        db.ref('chats/' + chatId).push({ sender: myPhone, text: txt, time: Date.now(), seen: false });
-        document.getElementById('msg-input').value = "";
-    }
-
-    function closeChat() { showScreen('scr-main'); activeChat = null; }
-    function updateStatus(s) { if(myPhone) { db.ref('status/' + myPhone).set(s); db.ref('status/' + myPhone).onDisconnect().set(false); }}
+// CHAT
+function openChat(p){
+ chatWith=p;show('chat')
+ let id=[myPhone,p].sort().join('_')
+ db.ref('chats/'+id).on('value',s=>{
+  chatWin.innerHTML=''
+  s.forEach(n=>{
+   let m=n.val(),me=m.sender===myPhone
+   if(!me&&!m.seen)db.ref('chats/'+id+'/'+n.key).update({seen:true})
+   chatWin.innerHTML+=`
+   <div class="msg ${me?'me':'you'}">
+   ${m.text}
+   ${me?`<span class="tick ${m.seen?'seen':''}">✔✔</span>`:''}
+   </div>`
+  })
+  chatWin.scrollTop=chatWin.scrollHeight
+ })
+}
+function send(){
+ if(!msg.value||!chatWith)return
+ let id=[myPhone,chatWith].sort().join('_')
+ db.ref('chats/'+id).push({
+  sender:myPhone,text:msg.value,seen:false,time:Date.now()
+ })
+ msg.value=''
+}
 </script>
 </body>
 </html>
