@@ -3,182 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lal Bilai - Messenger</title>
+    <title>Lal Bilai - Ultimate Messenger</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        :root { --main: #25D366; --dark: #075E54; --bg: #ffffff; --chat-bg: #e5ddd5; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        :root { --main: #25D366; --dark: #075E54; --bg: #ffffff; --chat-bg: #e5ddd5; --light-gray: #f0f0f0; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        body { margin: 0; background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        #app-wrap { width: 100%; max-width: 420px; height: 90vh; background: var(--bg); position: relative; display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.8); }
+        body { margin: 0; background: #121212; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        #app-wrap { width: 100%; max-width: 450px; height: 95vh; background: var(--bg); position: relative; display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
 
-        /* Auth Screen */
-        .auth-box { position: absolute; inset: 0; background: white; z-index: 5000; display: flex; flex-direction: column; padding: 30px; align-items: center; justify-content: center; }
-        .logo { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--main); margin-bottom: 20px; }
-        input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1.5px solid #eee; border-radius: 12px; outline: none; background: #f9f9f9; font-size: 15px; }
-        .btn { width: 100%; padding: 14px; background: var(--main); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        /* --- AUTHENTICATION SCREENS --- */
+        .auth-overlay { position: absolute; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; padding: 40px 25px; align-items: center; text-align: center; }
+        .logo-large { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--main); margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .auth-title { font-size: 24px; color: var(--dark); font-weight: bold; margin-bottom: 20px; }
+        
+        input { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 12px; outline: none; font-size: 16px; transition: 0.3s; }
+        input:focus { border-color: var(--main); background: #f9f9f9; }
+        .btn-main { width: 100%; padding: 15px; background: var(--main); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 17px; cursor: pointer; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); }
+        .btn-secondary { background: none; border: none; color: var(--dark); margin-top: 15px; cursor: pointer; font-size: 14px; text-decoration: underline; }
 
-        /* Header */
-        header { background: var(--dark); color: white; padding: 12px 15px; display: flex; align-items: center; gap: 12px; height: 65px; flex-shrink: 0; }
-        .p-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1.5px solid #fff; }
+        /* --- MAIN UI --- */
+        header { background: var(--dark); color: white; padding: 15px; display: flex; align-items: center; gap: 15px; height: 70px; z-index: 10; }
+        .header-title { flex: 1; font-size: 20px; font-weight: bold; }
+        .profile-btn { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
 
-        /* Chat List */
         #chat-list { flex: 1; overflow-y: auto; background: white; }
-        .user-row { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .user-card { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f2f2f2; cursor: pointer; transition: 0.2s; }
+        .user-card:active { background: #ececec; }
+        .user-info { margin-left: 15px; flex: 1; }
+        .user-info b { font-size: 17px; display: block; }
+        .user-info small { color: #777; font-size: 13px; }
+        .online-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; border: 2px solid white; }
+        .online-dot.active { background: var(--main); }
 
-        /* Inbox Overlay */
-        #inbox { position: absolute; inset: 0; background: var(--chat-bg); z-index: 1000; display: none; flex-direction: column; height: 100%; }
-        #msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
+        /* --- INBOX INTERFACE --- */
+        #inbox-overlay { position: absolute; inset: 0; background: var(--chat-bg); z-index: 1000; display: none; flex-direction: column; }
+        #msg-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
         
-        /* Message Bubbles */
-        .m-bubble { max-width: 80%; padding: 10px 14px; border-radius: 15px; font-size: 14.5px; position: relative; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .sent { align-self: flex-end; background: #dcf8c6; border-top-right-radius: 0; }
-        .rec { align-self: flex-start; background: #fff; border-top-left-radius: 0; }
-        .tick { font-size: 10px; color: #34B7F1; margin-left: 5px; font-weight: bold; }
+        .bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .sent { align-self: flex-end; background: #dcf8c6; border-bottom-right-radius: 2px; }
+        .received { align-self: flex-start; background: #ffffff; border-bottom-left-radius: 2px; }
+        .timestamp { font-size: 10px; color: #888; display: block; text-align: right; margin-top: 4px; }
+        .tick { color: #34B7F1; font-weight: bold; margin-left: 4px; }
 
-        /* টাইপিং বক্স - যেটা সবসময় মেসেজ এর নিচে থাকবে */
-        .chat-footer { background: #f0f0f0; padding: 10px; display: flex; gap: 8px; align-items: center; border-top: 1px solid #ddd; flex-shrink: 0; }
-        .chat-footer input { flex: 1; margin-bottom: 0; border-radius: 25px; background: white; border: 1px solid #ccc; padding: 10px 15px; height: 45px; }
-        .send-btn { width: 45px; height: 45px; background: var(--dark); color: white; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .chat-footer { background: #f0f0f0; padding: 10px 15px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd; }
+        .chat-footer input { margin-bottom: 0; border-radius: 30px; border: 1px solid #ccc; padding: 12px 20px; flex: 1; height: 45px; }
+        .send-btn { width: 45px; height: 45px; background: var(--dark); color: white; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
 
-        .typing-info { font-size: 11px; color: #a6ffbb; font-style: italic; display: none; }
         .hidden { display: none !important; }
+        .typing-txt { font-size: 11px; color: #fff; font-style: italic; opacity: 0.9; }
     </style>
 </head>
 <body>
 
 <div id="app-wrap">
-    <div id="scr-auth" class="auth-box hidden">
-        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="logo">
-        <input type="number" id="auth-ph" placeholder="Mobile Number">
-        <input type="password" id="auth-ps" placeholder="Password">
-        <button class="btn" onclick="handleAuth()">Login / Register</button>
+    <div id="view-login" class="auth-overlay">
+        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="logo-large">
+        <div class="auth-title">লগইন করুন</div>
+        <input type="number" id="l-phone" placeholder="মোবাইল নাম্বার">
+        <input type="password" id="l-pass" placeholder="পাসওয়ার্ড">
+        <button class="btn-main" onclick="processLogin()">প্রবেশ করুন</button>
+        <button class="btn-secondary" onclick="switchView('reg')">নতুন অ্যাকাউন্ট খুলুন</button>
     </div>
 
-    <div id="scr-main" style="display:none; flex-direction:column; height:100%;">
+    <div id="view-reg" class="auth-overlay hidden">
+        <div class="auth-title">রেজিস্ট্রেশন</div>
+        <input type="text" id="r-name" placeholder="আপনার পুরো নাম">
+        <input type="number" id="r-phone" placeholder="মোবাইল নাম্বার">
+        <input type="password" id="r-pass" placeholder="নতুন পাসওয়ার্ড দিন">
+        <button class="btn-main" onclick="sendOTPRequest()">ওটিপি পাঠান</button>
+        <button class="btn-secondary" onclick="switchView('login')">ইতিমধ্যে অ্যাকাউন্ট আছে?</button>
+    </div>
+
+    <div id="view-otp" class="auth-overlay hidden">
+        <div class="auth-title">ওটিপি যাচাই</div>
+        <p>আপনার রিকোয়েস্টটি অ্যাডমিন প্যানেলে পাঠানো হয়েছে।</p>
+        <input type="number" id="otp-code" placeholder="৪ ডিজিটের কোড দিন">
+        <button class="btn-main" onclick="verifyOTP()">ভেরিফাই করুন</button>
+    </div>
+
+    <div id="view-main" style="display:none; flex-direction:column; height:100%;">
         <header>
-            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="p-img">
-            <span style="flex:1; font-weight:bold;">Lal Bilai Messenger</span>
-            <span onclick="addContact()" style="cursor:pointer; font-size:22px;">➕</span>
-            <span onclick="logout()" style="margin-left:15px; cursor:pointer;">🚪</span>
+            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="profile-btn" onclick="alert('Profile Features Coming!')">
+            <div class="header-title">লাল বিলাই</div>
+            <span onclick="addPerson()" style="cursor:pointer; font-size:24px;">➕</span>
+            <span onclick="userLogout()" style="cursor:pointer; font-size:20px;">🚪</span>
         </header>
         <div id="chat-list"></div>
     </div>
 
-    <div id="inbox">
+    <div id="inbox-overlay">
         <header>
-            <span onclick="closeInbox()" style="cursor:pointer; font-size:20px;">⬅️</span>
-            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="p-img" style="width:35px; height:35px;">
+            <span onclick="closeChat()" style="cursor:pointer; font-size:22px;">⬅️</span>
+            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="profile-btn">
             <div style="flex:1">
-                <div id="chat-user" style="font-size:15px; font-weight:bold;">Name</div>
-                <div id="typing-ui" class="typing-info">typing...</div>
+                <div id="target-name" style="font-weight:bold;">নাম</div>
+                <div id="typing-box" class="typing-txt" style="display:none;">টাইপ করছে...</div>
             </div>
         </header>
-        <div id="msg-area"></div>
+        <div id="msg-container"></div>
         <div class="chat-footer">
-            <input type="text" id="m-input" placeholder="Type message..." oninput="handleTyping()">
-            <button class="send-btn" onclick="sendMsg()">➤</button>
+            <input type="text" id="m-input" placeholder="মেসেজ লিখুন..." oninput="handleTyping()">
+            <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
 </div>
 
 <script>
+    // ফায়ারবেস কনফিগারেশন
     const firebaseConfig = { databaseURL: "https://kbook-5d175-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let myPhone = localStorage.getItem("lb_phone") ? atob(localStorage.getItem("lb_phone")) : null;
-    let activeChat = null;
+    let myPhone = localStorage.getItem("lb_session") ? atob(localStorage.getItem("lb_session")) : null;
+    let currentChat = null;
     let tTimer;
+    let otpTempData = null;
 
-    function handleAuth() {
-        const ph = document.getElementById('auth-ph').value;
-        const ps = document.getElementById('auth-ps').value;
-        if(ph.length < 10) return alert("Valid phone required!");
+    function switchView(view) {
+        document.getElementById('view-login').classList.toggle('hidden', view !== 'login');
+        document.getElementById('view-reg').classList.toggle('hidden', view !== 'reg');
+        document.getElementById('view-otp').classList.toggle('hidden', view !== 'otp');
+    }
+
+    // --- অথেনটিকেশন লজিক ---
+    function sendOTPRequest() {
+        const name = document.getElementById('r-name').value;
+        const ph = document.getElementById('r-phone').value;
+        const ps = document.getElementById('r-pass').value;
+        if(ph.length < 10 || !name || !ps) return alert("সব তথ্য সঠিকভাবে দিন");
+
+        const code = Math.floor(1000 + Math.random() * 9000).toString();
+        otpTempData = { name, ph, ps, code };
         
-        db.ref('users/' + btoa(ph)).once('value', snap => {
-            if(snap.exists()){
-                if(snap.val().pass === ps) login(ph);
-                else alert("Wrong password!");
-            } else {
-                db.ref('users/' + btoa(ph)).set({ name: "User_"+ph.slice(-4), ph, pass: ps }).then(() => login(ph));
-            }
+        db.ref('otp_requests/' + ph).set({ ph, code, name }).then(() => {
+            switchView('otp');
+            alert("আপনার ওটিপি কোড হলো: " + code + " (অ্যাডমিন এটি ডাটাবেসে পাবে)");
         });
     }
 
-    function login(ph) { localStorage.setItem("lb_phone", btoa(ph)); location.reload(); }
+    function verifyOTP() {
+        const input = document.getElementById('otp-code').value;
+        if(input === otpTempData.code) {
+            db.ref('users/' + btoa(otpTempData.ph)).set({ name: otpTempData.name, ph: otpTempData.ph, pass: otpTempData.ps }).then(() => {
+                loginSuccess(otpTempData.ph);
+            });
+        } else alert("ভুল ওটিপি কোড!");
+    }
 
-    if(!myPhone) { document.getElementById('scr-auth').classList.remove('hidden'); }
-    else {
-        document.getElementById('scr-main').style.display = 'flex';
+    function processLogin() {
+        const ph = document.getElementById('l-phone').value;
+        const ps = document.getElementById('l-pass').value;
+        db.ref('users/' + btoa(ph)).once('value', snap => {
+            if(snap.exists() && snap.val().pass === ps) loginSuccess(ph);
+            else alert("নাম্বার বা পাসওয়ার্ড ভুল!");
+        });
+    }
+
+    function loginSuccess(ph) {
+        localStorage.setItem("lb_session", btoa(ph));
+        location.reload();
+    }
+
+    // --- অ্যাপ লজিক ---
+    if(myPhone) {
+        document.getElementById('view-login').classList.add('hidden');
+        document.getElementById('view-main').style.display = 'flex';
         db.ref('status/' + btoa(myPhone)).set(true);
         db.ref('status/' + btoa(myPhone)).onDisconnect().set(false);
-        loadList();
+        fetchContacts();
     }
 
-    function addContact() {
-        const ph = prompt("Friend's Number:");
+    function addPerson() {
+        const ph = prompt("বন্ধুর মোবাইল নাম্বার দিন:");
         if(!ph || ph === myPhone) return;
         db.ref('users/' + btoa(ph)).once('value', snap => {
-            if(snap.exists()) {
-                db.ref('contacts/' + btoa(myPhone) + '/' + btoa(ph)).set({ name: snap.val().name, ph, last: Date.now() });
-                openInbox(ph, snap.val().name);
-            } else alert("Not found!");
+            if(snap.exists()){
+                const u = snap.val();
+                db.ref('contacts/' + btoa(myPhone) + '/' + btoa(ph)).set({ name: u.name, ph: ph, last: Date.now() });
+                openChat(ph, u.name);
+            } else alert("এই নাম্বারটি লাল বিলাইতে নিবন্ধিত নয়!");
         });
     }
 
-    function loadList() {
+    function fetchContacts() {
         db.ref('contacts/' + btoa(myPhone)).orderByChild('last').on('value', snap => {
-            const list = document.getElementById('chat-list'); list.innerHTML = "";
-            let items = []; snap.forEach(c => items.unshift(c.val()));
-            items.forEach(u => {
-                list.innerHTML += `<div class="user-row" onclick="openInbox('${u.ph}', '${u.name}')">
-                    <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="p-img">
-                    <div style="margin-left:15px;"><b>${u.name}</b><br><small>${u.ph}</small></div>
+            const list = document.getElementById('chat-list');
+            list.innerHTML = "";
+            let arr = []; snap.forEach(c => arr.unshift(c.val()));
+            arr.forEach(u => {
+                db.ref('status/' + btoa(u.ph)).on('value', st => {
+                    const isOnline = st.val() === true;
+                    list.innerHTML += `
+                    <div class="user-card" onclick="openChat('${u.ph}', '${u.name}')">
+                        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" style="width:50px; height:50px; border-radius:50%">
+                        <div class="user-info"><b>${u.name}</b><small>${u.ph}</small></div>
+                        <div class="online-dot ${isOnline ? 'active' : ''}"></div>
+                    </div>`;
+                });
+            });
+        });
+    }
+
+    function openChat(ph, name) {
+        currentChat = ph;
+        document.getElementById('target-name').innerText = name;
+        document.getElementById('inbox-overlay').style.display = 'flex';
+        
+        // টাইপিং লিসেনার
+        db.ref('typing/' + btoa(ph) + '/' + btoa(myPhone)).on('value', s => {
+            document.getElementById('typing-box').style.display = s.val() ? 'block' : 'none';
+        });
+
+        // মেসেজ লিসেনার (রিয়েল-টাইম)
+        const id = [myPhone, ph].sort().join("_");
+        db.ref('messages/' + id).on('value', snap => {
+            const box = document.getElementById('msg-container');
+            box.innerHTML = "";
+            snap.forEach(mNode => {
+                const m = mNode.val();
+                const isMe = m.sender === myPhone;
+                box.innerHTML += `
+                <div class="bubble ${isMe ? 'sent' : 'received'}">
+                    ${m.txt}
+                    <span class="timestamp">${new Date(m.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} ${isMe ? '<span class="tick">✔✔</span>' : ''}</span>
                 </div>`;
             });
-        });
-    }
-
-    function openInbox(ph, name) {
-        activeChat = ph;
-        document.getElementById('chat-user').innerText = name;
-        document.getElementById('inbox').style.display = 'flex';
-        
-        db.ref('typing/' + btoa(ph) + '/' + btoa(myPhone)).on('value', s => {
-            document.getElementById('typing-ui').style.display = s.val() ? 'block' : 'none';
-        });
-
-        const chatID = [myPhone, ph].sort().join("_");
-        db.ref('messages/' + chatID).on('value', snap => {
-            const area = document.getElementById('msg-area'); area.innerHTML = "";
-            snap.forEach(mNode => {
-                const m = mNode.val(); const isMe = m.sender === myPhone;
-                area.innerHTML += `<div class="m-bubble ${isMe ? 'sent' : 'rec'}">${m.text}${isMe ? '<span class="tick">✔✔</span>' : ''}</div>`;
-            });
-            area.scrollTop = area.scrollHeight;
+            box.scrollTop = box.scrollHeight;
         });
     }
 
     function handleTyping() {
-        db.ref('typing/' + btoa(myPhone) + '/' + btoa(activeChat)).set(true);
+        db.ref('typing/' + btoa(myPhone) + '/' + btoa(currentChat)).set(true);
         clearTimeout(tTimer);
-        tTimer = setTimeout(() => db.ref('typing/' + btoa(myPhone) + '/' + btoa(activeChat)).set(false), 2000);
+        tTimer = setTimeout(() => db.ref('typing/' + btoa(myPhone) + '/' + btoa(currentChat)).set(false), 2000);
     }
 
-    function sendMsg() {
-        const txt = document.getElementById('m-input').value; if(!txt || !activeChat) return;
-        const chatID = [myPhone, activeChat].sort().join("_");
-        db.ref('messages/' + chatID).push({ sender: myPhone, text: txt, time: Date.now() });
-        db.ref('contacts/' + btoa(myPhone) + '/' + btoa(activeChat)).update({ last: Date.now() });
+    function sendMessage() {
+        const val = document.getElementById('m-input').value;
+        if(!val || !currentChat) return;
+        const id = [myPhone, currentChat].sort().join("_");
+        db.ref('messages/' + id).push({ sender: myPhone, txt: val, time: Date.now() });
+        db.ref('contacts/' + btoa(myPhone) + '/' + btoa(currentChat)).update({ last: Date.now() });
         document.getElementById('m-input').value = "";
     }
 
-    function closeInbox() { document.getElementById('inbox').style.display = 'none'; activeChat = null; }
-    function logout() { db.ref('status/' + btoa(myPhone)).set(false); localStorage.clear(); location.reload(); }
+    function closeChat() { document.getElementById('inbox-overlay').style.display = 'none'; currentChat = null; }
+    function userLogout() { db.ref('status/' + btoa(myPhone)).set(false); localStorage.clear(); location.reload(); }
 </script>
 </body>
 </html>
