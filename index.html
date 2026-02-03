@@ -9,36 +9,37 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        :root { --red: #D32F2F; --white: #fff; --gray: #f5f5f5; }
+        :root { --red: #D32F2F; --white: #ffffff; --gray: #f5f5f5; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: #000; height: 100vh; display: flex; justify-content: center; }
-        #app-wrap { width: 100%; max-width: 400px; height: 100vh; background: var(--white); position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        body { margin: 0; background: #000; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
         
-        /* Splash & Overlays */
-        .overlay { position: absolute; inset: 0; background: #fff; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        #app-wrap { width: 100%; max-width: 400px; height: 100vh; background: var(--white); position: relative; display: flex; flex-direction: column; }
+
+        /* Overlays & Splash */
+        .overlay { position: absolute; inset: 0; background: #fff; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         .logo { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--red); animation: bounce 2s infinite ease; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
         /* Screens */
         .screen { padding: 30px; display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; position: absolute; inset: 0; background: #fff; z-index: 100; }
         .visible { display: flex; }
-        input { width: 100%; padding: 15px; border: 1.5px solid #ddd; border-radius: 12px; outline: none; margin-bottom: 15px; font-size: 16px; background: var(--gray); }
+        
+        input { width: 100%; padding: 15px; border: 1.5px solid #ddd; border-radius: 12px; outline: none; margin-bottom: 12px; font-size: 16px; background: var(--gray); }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; background: var(--red); color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
-        .btn:active { transform: scale(0.98); }
-
-        /* Header */
-        header { background: var(--red); color: white; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .profile-pic { width: 38px; height: 38px; border-radius: 50%; border: 2px solid #fff; overflow: hidden; cursor: pointer; }
-
-        /* Chat */
-        #chat-win { flex: 1; overflow-y: auto; padding: 15px; background: #fff; display: flex; flex-direction: column; gap: 8px; }
-        .msg-box { max-width: 75%; padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.4; position: relative; }
+        
+        /* Messenger UI */
+        header { background: var(--red); color: white; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; }
+        .profile-btn { width: 38px; height: 38px; border-radius: 50%; border: 2px solid #fff; overflow: hidden; cursor: pointer; }
+        
+        #chat-win { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: #fff; }
+        .msg-box { max-width: 80%; padding: 10px 14px; border-radius: 15px; font-size: 14px; position: relative; }
         .sent { align-self: flex-end; background: var(--red); color: #fff; border-bottom-right-radius: 2px; }
         .rec { align-self: flex-start; background: #eee; color: #333; border-bottom-left-radius: 2px; }
-        .seen { font-size: 12px; color: var(--red); font-weight: 900; margin-left: 5px; }
+        .status-mark { font-size: 12px; color: var(--red); font-weight: 900; margin-left: 5px; }
 
-        .notice { font-size: 11px; color: #999; margin-top: 20px; text-align: center; line-height: 1.5; }
-        .powered { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 10px; color: #ccc; font-weight: bold; }
+        #typing-text { font-size: 10px; color: var(--red); height: 15px; padding-left: 15px; font-style: italic; }
+        .notice { font-size: 11px; color: #999; margin-top: 15px; text-align: center; }
+        .powered { position: absolute; bottom: 8px; width: 100%; text-align: center; font-size: 10px; color: #ccc; }
     </style>
 </head>
 <body>
@@ -51,57 +52,57 @@
         <h2 style="color:var(--red); margin-top:15px; letter-spacing: 2px;">LAL BILAI</h2>
     </div>
 
-    <div id="reg-success" class="overlay" style="display: none; z-index: 6000;">
+    <div id="welcome-msg" class="overlay" style="display: none;">
         <h1 style="color: var(--red);">Welcome to Lal Bilai!</h1>
-        <p>আপনার রেজিস্ট্রেশন সফল হয়েছে। <br>এখন আপনি রিয়েল-টাইম চ্যাট করতে পারবেন।</p>
-        <button class="btn" style="width: 200px; margin-top: 20px;" onclick="finishReg()">Start Journey</button>
+        <p>রেজিস্ট্রেশন সফল হয়েছে। <br>সব কিছু এখন রিয়েল টাইম।</p>
+        <button class="btn" style="width: 180px; margin-top: 20px;" onclick="location.reload()">Start Chatting</button>
     </div>
 
     <div id="scr-login" class="screen">
         <h2 style="margin-bottom: 25px;">Sign In</h2>
         <input type="number" id="l-ph" placeholder="Phone Number">
         <input type="password" id="l-ps" placeholder="Password">
-        <button class="btn" onclick="login()">Login</button>
-        <p style="margin-top:20px; font-size:14px;">No account? <span style="color:var(--red); font-weight:bold; cursor:pointer;" onclick="showScr('scr-reg')">Register</span></p>
-        <div class="notice">এখানে ফেক কোন কারিগরি চলবে না। <br><b>সব কিছু রিয়েল টাইম।</b></div>
+        <button class="btn" onclick="handleLogin()">Login</button>
+        <p style="font-size:14px; margin-top:15px;">একাউন্ট নেই? <span style="color:var(--red); font-weight:bold; cursor:pointer;" onclick="showScr('scr-reg')">নিবন্ধন করুন</span></p>
+        <div class="notice">এখানে ফেক কোন কারিগরি চলবে না। <br> সব রিয়েল টাইম।</div>
     </div>
 
     <div id="scr-reg" class="screen">
-        <h2>Registration</h2>
+        <h2>New Account</h2>
         <input type="text" id="r-name" placeholder="Full Name">
         <input type="number" id="r-ph" placeholder="Mobile Number">
         <input type="password" id="r-ps" placeholder="Set Password">
-        <button class="btn" onclick="sendOTPRequest()">Next (Get OTP)</button>
-        <p style="margin-top:15px; font-size:13px; cursor:pointer;" onclick="showScr('scr-login')">Back to Login</p>
+        <button class="btn" onclick="sendOTPRequest()">Next</button>
+        <p style="font-size:13px; margin-top:15px; cursor:pointer;" onclick="showScr('scr-login')">Back to Login</p>
     </div>
 
     <div id="scr-otp" class="screen">
         <h2>Verify Identity</h2>
-        <p style="font-size:13px; color:#666; text-align:center; margin-bottom:20px;">এডমিনের কাছ থেকে পাওয়া ৪ ডিজিটের <br> কোডটি এখানে বসান।</p>
-        <input type="number" id="v-otp" placeholder="0 0 0 0" style="text-align:center; font-size:24px; letter-spacing:10px;">
-        <button class="btn" onclick="validateOTP()">Confirm & Join</button>
-        <p id="wa-admin" style="color:green; font-weight:bold; margin-top:20px; cursor:pointer;">💬 Get OTP from KAIYUM</p>
+        <p style="font-size:12px; color:#666; margin-bottom:20px;">এডমিনের কাছ থেকে কোডটি সংগ্রহ করুন।</p>
+        <input type="number" id="v-otp" placeholder="Enter 4 Digit OTP" style="text-align:center; font-size:22px; letter-spacing:5px;">
+        <button class="btn" onclick="verifyOTP()">Confirm & Join</button>
+        <p id="wa-admin" style="color:green; font-weight:bold; margin-top:20px; cursor:pointer;">💬 Get Code from Admin</p>
     </div>
 
     <div id="scr-main" style="display:none; flex-direction:column; height:100%;">
         <header>
             <div style="display:flex; align-items:center; gap:10px;">
-                <div class="profile-pic" onclick="alert('Profile Settings Coming Soon')">
+                <div class="profile-btn" onclick="alert('Profile updates coming soon!')">
                     <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" width="100%">
                 </div>
                 <div>
-                    <span id="chat-title" style="font-weight:bold; font-size:15px;">Lal Bilai</span><br>
-                    <span id="chat-status" style="font-size:10px; opacity:0.8;"></span>
+                    <span id="target-name" style="font-weight:bold; font-size:15px;">Lal Bilai</span><br>
+                    <span id="target-status" style="font-size:10px; opacity:0.8;"></span>
                 </div>
             </div>
-            <div style="font-size:22px; cursor:pointer; background:rgba(255,255,255,0.2); width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;" onclick="startNewChat()">+</div>
+            <div style="font-size:24px; cursor:pointer; background:rgba(255,255,255,0.2); width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;" onclick="startChat()">+</div>
         </header>
 
         <div id="chat-win"></div>
-        <div id="typing-box" style="font-size:10px; color:var(--red); padding-left:15px; height:15px; font-style:italic;"></div>
+        <div id="typing-text"></div>
 
         <div style="padding:10px; background:#fff; border-top:1px solid #eee; display:flex; gap:8px;">
-            <input type="text" id="msg-input" placeholder="Type message..." style="margin-bottom:0; border-radius:25px;" oninput="setTyping(true)" onblur="setTyping(false)">
+            <input type="text" id="msg-input" placeholder="Type..." style="margin-bottom:0; border-radius:25px;" oninput="updateTyping(true)" onblur="updateTyping(false)">
             <button class="btn" style="width:75px; height:48px;" onclick="sendMsg()">Send</button>
         </div>
     </div>
@@ -116,6 +117,7 @@
     let myPhone = localStorage.getItem("lb_phone") ? atob(localStorage.getItem("lb_phone")) : null;
     let activeChat = null;
     let tempUser = null;
+    const notifySound = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
 
     window.onload = () => {
         setTimeout(() => {
@@ -130,101 +132,99 @@
         document.getElementById(id).classList.add('visible');
     }
 
-    // --- REGISTRATION & OTP (THE FIX) ---
+    // --- AUTH LOGIC ---
     function sendOTPRequest() {
         const name = document.getElementById('r-name').value;
         const ph = document.getElementById('r-ph').value;
         const ps = document.getElementById('r-ps').value;
 
-        if(!name || !ph || !ps) return alert("Please fill all fields!");
+        if(!name || !ph || !ps) return alert("সব তথ্য দিন!");
 
-        const generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
-        tempUser = { name, ph, ps, otp: generatedOTP };
+        const code = Math.floor(1000 + Math.random() * 9000).toString();
+        tempUser = { name, ph, ps, otp: code };
 
-        // ফায়ারবেসে ডাটা পাঠানোর কমান্ড
+        // ডাটাবেসে ওটিপি পাঠানো
         db.ref('otp_requests/' + ph).set({
             phone: ph,
-            otp_code: generatedOTP,
-            requested_at: Date.now()
+            code: code,
+            time: Date.now()
         }).then(() => {
             showScr('scr-otp');
-            const waMsg = `আসসালামু আলাইকুম কাইয়ুম ভাই, আমি লাল বিলাইতে একাউন্ট খুলতে চাই। আমার নাম্বার: ${ph}। ওটিপি দিন।`;
+            const waMsg = `আসসালামু আলাইকুম এডমিন, আমি রেজিস্ট্রেশন করছি। নাম্বার: ${ph}। ওটিপি দিন।`;
             document.getElementById('wa-admin').onclick = () => window.open(`https://wa.me/9660558687975?text=${encodeURIComponent(waMsg)}`);
-        }).catch(err => alert("Firebase Error: " + err.message));
+        }).catch(err => alert("Error: " + err.message));
     }
 
-    function validateOTP() {
+    function verifyOTP() {
         const input = document.getElementById('v-otp').value;
         if(input === tempUser.otp) {
             db.ref('users/' + btoa(tempUser.ph)).set({
                 name: tempUser.name,
                 pass: tempUser.ps,
-                phone: tempUser.ph,
-                joined: Date.now()
+                phone: tempUser.ph
             }).then(() => {
-                document.getElementById('reg-success').style.display = 'flex';
+                document.getElementById('welcome-msg').style.display = 'flex';
             });
-        } else alert("Invalid Code!");
+        } else alert("ভুল কোড!");
     }
 
-    function finishReg() {
-        localStorage.setItem("lb_phone", btoa(tempUser.ph));
-        location.reload();
-    }
-
-    // --- LOGIN & MAIN APP ---
-    function login() {
+    function handleLogin() {
         const ph = document.getElementById('l-ph').value;
         const ps = document.getElementById('l-ps').value;
         db.ref('users/' + btoa(ph)).once('value', snap => {
             if(snap.exists() && snap.val().pass === ps) {
                 localStorage.setItem("lb_phone", btoa(ph));
                 location.reload();
-            } else alert("Wrong details!");
+            } else alert("ভুল পাসওয়ার্ড বা নাম্বার!");
         });
     }
 
+    // --- CHAT LOGIC ---
     function setupApp() {
         document.getElementById('scr-main').style.display = 'flex';
     }
 
-    function startNewChat() {
-        const target = prompt("বন্ধুর রেজিস্টার্ড নাম্বারটি দিন:");
+    function startChat() {
+        const target = prompt("বন্ধুর মোবাইল নাম্বার দিন:");
         if(!target) return;
         db.ref('users/' + btoa(target)).once('value', snap => {
             if(snap.exists()) {
                 activeChat = target;
-                document.getElementById('chat-title').innerText = snap.val().name;
-                initChatSync();
-            } else alert("এই নাম্বারটি লাল বিলাইতে রেজিস্টার্ড নেই!");
+                document.getElementById('target-name').innerText = snap.val().name;
+                initMessenger();
+            } else alert("এই নাম্বারটি রেজিস্টার্ড নেই!");
         });
     }
 
-    function initChatSync() {
+    function initMessenger() {
         const chatId = [myPhone, activeChat].sort().join("_");
         
-        // Online & Typing
+        // অনলাইন স্ট্যাটাস
         db.ref('status/' + activeChat).on('value', snap => {
-            document.getElementById('chat-status').innerText = snap.val() === 'online' ? '● Active Now' : 'Offline';
-            document.getElementById('chat-status').style.color = snap.val() === 'online' ? '#00ff00' : '#fff';
+            const s = snap.val();
+            document.getElementById('target-status').innerText = s === 'online' ? '● Active' : 'Offline';
+            document.getElementById('target-status').style.color = s === 'online' ? '#0ff' : '#eee';
         });
 
+        // টাইপিং চেক
         db.ref('typing/' + activeChat + '/' + myPhone).on('value', snap => {
-            document.getElementById('typing-box').innerText = snap.val() ? 'typing...' : '';
+            document.getElementById('typing-text').innerText = snap.val() ? 'is typing...' : '';
         });
 
-        // Messages with Seen Logic
+        // মেসেজ লোড এবং সীন স্ট্যাটাস
         db.ref('chats/' + chatId).on('value', snap => {
             const win = document.getElementById('chat-win');
             win.innerHTML = "";
             snap.forEach(child => {
                 const m = child.val();
                 const isMe = m.sender === myPhone;
+                
+                // সীন আপডেট
                 if(!isMe && !m.seen) db.ref('chats/' + chatId + '/' + child.key).update({seen: true});
 
                 win.innerHTML += `
                     <div class="msg-box ${isMe ? 'sent' : 'rec'}">
-                        ${m.text} ${isMe ? `<span class="seen">${m.seen ? '..' : '.'}</span>` : ''}
+                        ${m.text} ${isMe ? `<span class="status-mark">${m.seen ? '..' : '.'}</span>` : ''}
                     </div>`;
             });
             win.scrollTop = win.scrollHeight;
@@ -235,12 +235,17 @@
         const txt = document.getElementById('msg-input').value;
         if(!txt || !activeChat) return;
         const chatId = [myPhone, activeChat].sort().join("_");
-        db.ref('chats/' + chatId).push({ sender: myPhone, text: txt, seen: false, time: Date.now() });
+        db.ref('chats/' + chatId).push({
+            sender: myPhone,
+            text: txt,
+            seen: false,
+            time: Date.now()
+        });
         document.getElementById('msg-input').value = "";
-        setTyping(false);
+        updateTyping(false);
     }
 
-    function setTyping(val) { if(activeChat) db.ref('typing/' + myPhone + '/' + activeChat).set(val); }
+    function updateTyping(v) { if(activeChat) db.ref('typing/' + myPhone + '/' + activeChat).set(v); }
     function updateOnline(s) { if(myPhone) { db.ref('status/' + myPhone).set(s ? 'online' : 'offline'); db.ref('status/' + myPhone).onDisconnect().set('offline'); }}
     function logout() { updateOnline(false); localStorage.clear(); location.reload(); }
 </script>
