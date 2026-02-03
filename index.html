@@ -3,114 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lal Bilai - Pro Messenger with Seen Status</title>
+    <title>Lal Bilai - Realtime Ecosystem</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
-        :root { --red: #D32F2F; --white: #ffffff; --green: #4CAF50; }
+        :root { --red: #D32F2F; --white: #ffffff; --green: #4CAF50; --gray: #f8f8f8; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: #000; height: 100vh; display: flex; justify-content: center; }
         
         #app-wrap { width: 100%; max-width: 400px; height: 100vh; background: var(--white); position: relative; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Header */
-        header { background: var(--red); color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; z-index: 200; }
-        .header-left { display: flex; align-items: center; gap: 10px; }
-        .profile-btn { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; overflow: hidden; }
-        .add-btn { font-size: 22px; cursor: pointer; background: rgba(255,255,255,0.2); width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        /* Splash & Welcome */
+        .full-overlay { position: absolute; inset: 0; background: #fff; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        .anim-logo { width: 85px; height: 85px; border-radius: 50%; border: 3px solid var(--red); animation: bounce 2s infinite ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
         /* Screens */
         .screen { padding: 30px; display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; position: absolute; inset: 0; background: #fff; z-index: 100; }
         .visible { display: flex; }
-        input, select { width: 100%; padding: 14px; border: 1.5px solid #eee; border-radius: 10px; outline: none; margin-bottom: 12px; font-size: 15px; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: var(--red); color: white; font-weight: bold; cursor: pointer; }
+        
+        input { width: 100%; padding: 14px; border: 1.5px solid #eee; border-radius: 12px; outline: none; margin-bottom: 12px; font-size: 15px; background: var(--gray); }
+        input:focus { border-color: var(--red); background: #fff; }
+        
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; background: var(--red); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn:active { transform: scale(0.97); }
 
-        /* Chat Window */
-        #chat-window { flex: 1; overflow-y: auto; background: #fdfdfd; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .msg-container { display: flex; flex-direction: column; max-width: 80%; }
-        .sent-container { align-self: flex-end; }
-        .rec-container { align-self: flex-start; }
-        
-        .msg { padding: 10px; border-radius: 12px; font-size: 14px; position: relative; }
-        .sent { background: var(--red); color: #fff; }
-        .rec { background: #eee; color: #333; }
-        
-        /* Seen/Unseen Status Dots */
-        .status-mark { font-size: 14px; font-weight: 900; align-self: flex-end; margin-top: 2px; color: var(--red); line-height: 1; }
-        
-        #typing-text { font-size: 11px; color: var(--red); height: 15px; padding-left: 20px; font-style: italic; }
+        .notice { font-size: 11px; color: #888; text-align: center; margin-top: 15px; line-height: 1.4; }
+        .red-text { color: var(--red); font-weight: bold; }
 
-        /* Sidebar */
-        #side-panel { position: absolute; top: 0; left: -100%; width: 85%; height: 100%; background: #fff; z-index: 300; transition: 0.4s; box-shadow: 5px 0 15px rgba(0,0,0,0.2); padding: 25px; }
+        /* Chat UI */
+        header { background: var(--red); color: white; padding: 12px; display: flex; align-items: center; justify-content: space-between; z-index: 200; }
+        #chat-window { flex: 1; overflow-y: auto; background: #fff; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .msg-box { display: flex; flex-direction: column; max-width: 80%; }
+        .msg { padding: 10px 14px; border-radius: 15px; font-size: 14px; }
+        .sent { align-self: flex-end; background: var(--red); color: #fff; border-bottom-right-radius: 2px; }
+        .rec { align-self: flex-start; background: #eee; color: #333; border-bottom-left-radius: 2px; }
+        .seen-status { font-size: 12px; color: var(--red); align-self: flex-end; font-weight: 900; margin-top: 2px; }
+
+        .profile-btn { width: 38px; height: 38px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; overflow: hidden; }
+        #side-panel { position: absolute; top: 0; left: -100%; width: 80%; height: 100%; background: #fff; z-index: 300; transition: 0.4s; box-shadow: 5px 0 15px rgba(0,0,0,0.1); padding: 25px; }
         #side-panel.open { left: 0; }
-        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 250; display: none; }
-        .powered-by { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 10px; color: #ccc; }
+        
+        .powered-by { position: absolute; bottom: 8px; width: 100%; text-align: center; font-size: 10px; color: #ccc; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="app-wrap">
     <div class="powered-by">Powered by KAIYUM</div>
-    <div class="overlay" id="overlay" onclick="closeProfile()"></div>
 
-    <div id="splash" class="screen visible" style="z-index: 5000;">
-        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" style="width:80px; border-radius:50%; border:3px solid var(--red);">
-        <h2 style="color:var(--red); margin-top:15px;">LAL BILAI</h2>
+    <div id="splash" class="full-overlay">
+        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="anim-logo">
+        <h2 style="color:var(--red); margin-top:15px; letter-spacing: 2px;">LAL BILAI</h2>
+    </div>
+
+    <div id="welcome-msg" class="full-overlay" style="display: none;">
+        <h1 style="color: var(--red);">Welcome to Lal Bilai!</h1>
+        <p>আপনার যাত্রা শুভ হোক। সব কিছু এখন রিয়েল টাইম।</p>
+        <button class="btn" style="width: 150px; margin-top: 20px;" onclick="closeWelcome()">Start Chatting</button>
     </div>
 
     <div id="scr-login" class="screen">
-        <h2 id="lang-login-title">Sign In</h2>
+        <h2 style="margin-bottom: 20px;">Sign In</h2>
         <input type="number" id="l-ph" placeholder="Mobile Number">
         <input type="password" id="l-ps" placeholder="Password">
         <button class="btn" onclick="handleLogin()">Login</button>
-        <p style="font-size:12px; margin-top:15px; cursor:pointer;" onclick="showScr('scr-reg')">Create Account</p>
+        <p style="font-size:13px; margin-top:15px;">একউন্ট নেই? <span class="red-text" style="cursor:pointer;" onclick="showScr('scr-reg')">নিবন্ধন করুন</span></p>
+        <div class="notice">এখানে ফেক কোন কারিগরি চলবে না। <br> <span class="red-text">সব কিছু রিয়েল টাইম।</span></div>
     </div>
 
     <div id="scr-reg" class="screen">
-        <h2 id="lang-reg-title">Registration</h2>
+        <h2>New Account</h2>
         <input type="text" id="r-name" placeholder="Full Name">
         <input type="number" id="r-ph" placeholder="Mobile Number">
-        <input type="password" id="r-ps" placeholder="Password">
-        <button class="btn" onclick="sendToOTP()">Next</button>
+        <input type="password" id="r-ps" placeholder="Set Password">
+        <button class="btn" onclick="requestOTP()">Next</button>
+        <p style="font-size:12px; margin-top:15px; cursor:pointer;" onclick="showScr('scr-login')">Back to Login</p>
+    </div>
+
+    <div id="scr-otp" class="screen">
+        <h2>Verification</h2>
+        <p style="font-size:12px; color:#666; text-align:center; margin-bottom:20px;">এডমিনের কাছ থেকে পাওয়া <br> ৪ ডিজিটের ওটিপিটি বসান।</p>
+        <input type="number" id="v-otp" placeholder="Enter 4 Digit Code" style="text-align:center; font-size:22px; letter-spacing: 5px;">
+        <button class="btn" onclick="verifyReg()">Confirm & Register</button>
+        <p id="wa-admin" style="color:green; font-weight:bold; margin-top:15px; cursor:pointer; font-size:13px;">💬 Get Code from Admin</p>
     </div>
 
     <div id="scr-main" style="display:none; flex-direction:column; height:100%;">
         <header>
-            <div class="header-left">
-                <div class="profile-btn" onclick="openProfile()">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="profile-btn" onclick="toggleSidebar(true)">
                     <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" width="100%">
                 </div>
-                <div class="add-btn" onclick="addUser()">+</div>
+                <div>
+                    <span id="chat-partner-name" style="font-size:14px; font-weight:bold;">Lal Bilai</span><br>
+                    <span id="chat-partner-status" style="font-size:9px; opacity:0.8;"></span>
+                </div>
             </div>
-            <div style="text-align: center;">
-                <span id="target-name" style="font-size:14px; font-weight:bold;">Lal Bilai</span><br>
-                <span id="target-status" style="font-size:9px;"></span>
-            </div>
-            <span onclick="logout()" style="font-size:11px; cursor:pointer;">Logout</span>
+            <div style="font-size:20px; cursor:pointer; background:rgba(255,255,255,0.2); width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;" onclick="addFriend()">+</div>
         </header>
 
         <div id="chat-window"></div>
-        <div id="typing-text"></div>
+        <div id="typing-notif" style="font-size:10px; color:var(--red); padding-left:15px; height:12px; font-style:italic;"></div>
 
-        <div class="chat-input-area" id="input-area" style="padding:10px; display:none; background:#fff; border-top:1px solid #eee;">
-            <input type="text" id="msg-input" placeholder="Type..." style="margin-bottom:0; border-radius:20px;" oninput="updateTyping(true)" onblur="updateTyping(false)">
-            <button class="btn" style="width:70px; margin-top:5px; height:45px;" onclick="sendMsg()">Send</button>
+        <div id="input-area" style="padding:10px; display:none; background:#fff; border-top:1px solid #eee; display:flex; gap:8px;">
+            <input type="text" id="msg-input" placeholder="Type a message..." style="margin-bottom:0; border-radius:20px;" oninput="handleTyping(true)" onblur="handleTyping(false)">
+            <button class="btn" style="width:70px; height:45px;" onclick="sendMessage()">Send</button>
         </div>
     </div>
 
     <div id="side-panel">
-        <h3 id="lang-profile-head">Settings</h3>
-        <input type="text" id="up-name" placeholder="Update Name">
-        <button class="btn" onclick="updateName()" style="padding:8px; margin-bottom:15px;">Update</button>
+        <h3 style="color:var(--red);">Settings</h3>
+        <label style="font-size:12px;">Update Name:</label>
+        <input type="text" id="up-name">
+        <button class="btn" style="padding:10px; font-size:13px;" onclick="updateProfile()">Update Profile</button>
         
-        <label style="font-size:12px;">Language / ভাষা:</label>
-        <select id="lang-select" onchange="changeLang()">
-            <option value="en">English</option>
-            <option value="bn">বাংলা</option>
-        </select>
-        <button class="btn" style="margin-top:30px; background:#eee; color:#333;" onclick="closeProfile()">Close</button>
+        <div style="margin-top:20px; font-size:12px; color:#666;">
+            Language: English/বাংলা (Auto)
+        </div>
+        
+        <button class="btn" style="margin-top:40px; background:#eee; color:#333;" onclick="toggleSidebar(false)">Close</button>
+        <button class="btn" style="margin-top:10px; background:#333;" onclick="logout()">Logout</button>
     </div>
 </div>
 
@@ -121,79 +136,110 @@
 
     let myPhone = localStorage.getItem("lb_phone") ? atob(localStorage.getItem("lb_phone")) : null;
     let activeChat = null;
-    let currentLang = localStorage.getItem("lb_lang") || "en";
+    let tempUserData = null;
     const notifySound = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
 
-    const dict = {
-        en: { typing: "is typing...", login: "Sign In", profile: "Profile Settings", add: "Add Friend" },
-        bn: { typing: "লিখছে...", login: "প্রবেশ করুন", profile: "প্রোফাইল সেটিংস", add: "বন্ধু যোগ করুন" }
-    };
-
     window.onload = () => {
-        if (Notification.permission !== "granted") Notification.requestPermission();
-        applyLang();
         setTimeout(() => {
             document.getElementById('splash').style.display = 'none';
-            if(myPhone) { showApp(); setOnlineStatus(true); }
+            if(myPhone) { showApp(); updateOnline(true); }
             else showScr('scr-login');
-        }, 2000);
+        }, 2500);
     };
 
+    function showScr(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
+        document.getElementById(id).classList.add('visible');
+    }
+
+    // --- Auth Logic ---
+    function handleLogin() {
+        const ph = document.getElementById('l-ph').value;
+        const ps = document.getElementById('l-ps').value;
+        if(!ph || !ps) return alert("সব ঘর পূরণ করুন!");
+
+        db.ref('users/' + btoa(ph)).once('value', snap => {
+            if(snap.exists() && snap.val().pass === ps) {
+                localStorage.setItem("lb_phone", btoa(ph));
+                myPhone = ph;
+                updateOnline(true);
+                showApp();
+            } else alert("ভুল নাম্বার বা পাসওয়ার্ড!");
+        });
+    }
+
+    function requestOTP() {
+        const name = document.getElementById('r-name').value;
+        const ph = document.getElementById('r-ph').value;
+        const ps = document.getElementById('r-ps').value;
+        if(!name || !ph || !ps) return alert("সব তথ্য দিন!");
+
+        const code = Math.floor(1000 + Math.random() * 9000).toString();
+        tempUserData = { name, ph, ps, otp: code };
+
+        db.ref('otp_requests/' + ph).set({ phone: ph, code: code });
+        
+        const msg = `Assalamu Alaikum Admin, I want to register. Number: ${ph}. Give me OTP!`;
+        document.getElementById('wa-admin').onclick = () => window.open(`https://wa.me/9660558687975?text=${encodeURIComponent(msg)}`);
+        
+        showScr('scr-otp');
+    }
+
+    function verifyReg() {
+        const input = document.getElementById('v-otp').value;
+        if(input === tempUserData.otp) {
+            db.ref('users/' + btoa(tempUserData.ph)).set({
+                name: tempUserData.name,
+                pass: tempUserData.ps,
+                phone: tempUserData.ph
+            }).then(() => {
+                document.getElementById('welcome-msg').style.display = 'flex';
+            });
+        } else alert("ভুল ওটিপি!");
+    }
+
+    function closeWelcome() {
+        localStorage.setItem("lb_phone", btoa(tempUserData.ph));
+        myPhone = tempUserData.ph;
+        location.reload();
+    }
+
+    // --- Chat System ---
     function showApp() {
-        showScr('scr-main');
         document.getElementById('scr-main').style.display = 'flex';
         db.ref('users/' + btoa(myPhone)).once('value', snap => {
             if(snap.exists()) document.getElementById('up-name').value = snap.val().name;
         });
     }
 
-    function setOnlineStatus(status) {
-        if(!myPhone) return;
-        db.ref('status/' + myPhone).set(status ? "online" : "offline");
-        db.ref('status/' + myPhone).onDisconnect().set("offline");
-    }
-
-    function applyLang() {
-        document.getElementById('lang-login-title').innerText = dict[currentLang].login;
-        document.getElementById('lang-profile-head').innerText = dict[currentLang].profile;
-        document.getElementById('lang-select').value = currentLang;
-    }
-
-    function changeLang() {
-        currentLang = document.getElementById('lang-select').value;
-        localStorage.setItem("lb_lang", currentLang);
-        applyLang();
-    }
-
-    // --- Chat & Seen Status Logic ---
-    function addUser() {
-        const target = prompt(dict[currentLang].add);
+    function addFriend() {
+        const target = prompt("বন্ধুর মোবাইল নাম্বার দিন:");
         if(!target) return;
         db.ref('users/' + btoa(target)).once('value', snap => {
             if(snap.exists()) {
                 activeChat = target;
-                document.getElementById('target-name').innerText = snap.val().name;
+                document.getElementById('chat-partner-name').innerText = snap.val().name;
                 document.getElementById('input-area').style.display = 'flex';
-                listenForChat();
-            } else alert("Not Registered!");
+                startRealtimeChat();
+            } else alert("এই নাম্বারটি লাল বিলাইতে নেই!");
         });
     }
 
-    function listenForChat() {
+    function startRealtimeChat() {
         const chatId = [myPhone, activeChat].sort().join("_");
         
-        // Typing Status
-        db.ref('typing/' + activeChat + '/' + myPhone).on('value', snap => {
-            document.getElementById('typing-text').innerText = snap.val() ? dict[currentLang].typing : "";
-        });
-
         // Online Status
         db.ref('status/' + activeChat).on('value', snap => {
-            const status = snap.val() || "offline";
-            document.getElementById('target-status').innerHTML = status === 'online' ? '<span style="color:green">● Online</span>' : 'Offline';
+            document.getElementById('chat-partner-status').innerText = snap.val() === 'online' ? '● Online' : 'Offline';
+            document.getElementById('chat-partner-status').style.color = snap.val() === 'online' ? '#00ff00' : '#fff';
         });
 
-        // Listen for new messages
+        // Typing Status
+        db.ref('typing/' + activeChat + '/' + myPhone).on('value', snap => {
+            document.getElementById('typing-notif').innerText = snap.val() ? 'is typing...' : '';
+        });
+
+        // Messages & Seen Status
         db.ref('chats/' + chatId).on('value', snap => {
             const win = document.getElementById('chat-window');
             win.innerHTML = "";
@@ -201,35 +247,25 @@
                 const m = child.val();
                 const isMine = m.sender === myPhone;
                 
-                // Mark as seen if message is not mine and I am looking at the chat
                 if(!isMine && m.seen === false) {
                     db.ref('chats/' + chatId + '/' + child.key).update({ seen: true });
                 }
 
-                const statusDot = isMine ? (m.seen ? ".." : ".") : "";
+                const div = document.createElement('div');
+                div.className = 'msg-box ' + (isMine ? 'sent-container' : 'rec-container');
+                div.style.alignSelf = isMine ? 'flex-end' : 'flex-start';
                 
-                win.innerHTML += `
-                    <div class="msg-container ${isMine ? 'sent-container' : 'rec-container'}">
-                        <div class="msg ${isMine ? 'sent' : 'rec'}">${m.text}</div>
-                        ${isMine ? `<span class="status-mark">${statusDot}</span>` : ''}
-                    </div>`;
+                div.innerHTML = `
+                    <div class="msg ${isMine ? 'sent' : 'rec'}">${m.text}</div>
+                    ${isMine ? `<span class="seen-status">${m.seen ? '..' : '.'}</span>` : ''}
+                `;
+                win.appendChild(div);
             });
             win.scrollTop = win.scrollHeight;
         });
-
-        // Notifications
-        db.ref('chats/' + chatId).limitToLast(1).on('child_added', snap => {
-            const m = snap.val();
-            if(m.sender === activeChat && m.seen === false) {
-                notifySound.play();
-                if(Notification.permission === "granted") {
-                    new Notification("Lal Bilai", { body: m.text });
-                }
-            }
-        });
     }
 
-    function sendMsg() {
+    function sendMessage() {
         const txt = document.getElementById('msg-input').value;
         if(!txt || !activeChat) return;
         const chatId = [myPhone, activeChat].sort().join("_");
@@ -240,30 +276,26 @@
             time: Date.now()
         });
         document.getElementById('msg-input').value = "";
-        updateTyping(false);
+        handleTyping(false);
     }
 
-    function updateTyping(isTyping) {
-        if(activeChat) db.ref('typing/' + myPhone + '/' + activeChat).set(isTyping);
+    function handleTyping(val) {
+        if(activeChat) db.ref('typing/' + myPhone + '/' + activeChat).set(val);
     }
 
-    function handleLogin() {
-        const ph = document.getElementById('l-ph').value;
-        const ps = document.getElementById('l-ps').value;
-        db.ref('users/' + btoa(ph)).once('value', snap => {
-            if(snap.exists() && snap.val().pass === ps) {
-                localStorage.setItem("lb_phone", btoa(ph));
-                myPhone = ph;
-                setOnlineStatus(true);
-                showApp();
-            } else alert("Error!");
-        });
+    function updateOnline(status) {
+        if(myPhone) {
+            db.ref('status/' + myPhone).set(status ? 'online' : 'offline');
+            db.ref('status/' + myPhone).onDisconnect().set('offline');
+        }
     }
 
-    function openProfile() { document.getElementById('side-panel').classList.add('open'); document.getElementById('overlay').style.display = 'block'; }
-    function closeProfile() { document.getElementById('side-panel').classList.remove('open'); document.getElementById('overlay').style.display = 'none'; }
-    function logout() { setOnlineStatus(false); localStorage.clear(); location.reload(); }
-    function showScr(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible')); document.getElementById(id).classList.add('visible'); }
+    function toggleSidebar(open) { document.getElementById('side-panel').classList.toggle('open', open); }
+    function logout() { updateOnline(false); localStorage.clear(); location.reload(); }
+    function updateProfile() {
+        const n = document.getElementById('up-name').value;
+        db.ref('users/' + btoa(myPhone)).update({ name: n }).then(() => alert("নাম আপডেট হয়েছে!"));
+    }
 </script>
 </body>
 </html>
