@@ -3,35 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lal Bilai Pro</title>
+    <title>Lal Bilai - RealTime Messenger</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        :root { --main: #25D366; --dark: #075E54; --bg: #ffffff; --red: #D32F2F; }
+        :root { --main: #25D366; --dark: #075E54; --bg: #ffffff; --chat-bg: #e5ddd5; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: #000; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
-        #app-wrap { width: 100%; max-width: 450px; height: 100vh; background: var(--bg); position: relative; display: flex; flex-direction: column; }
+        body { margin: 0; background: #f0f0f0; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
+        #app-wrap { width: 100%; max-width: 450px; height: 100vh; background: var(--bg); position: relative; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.2); }
 
         /* Auth UI */
-        .auth-box { position: absolute; inset: 0; background: white; z-index: 5000; display: flex; flex-direction: column; padding: 40px 25px; align-items: center; justify-content: center; text-align: center; }
-        .logo { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--main); margin-bottom: 20px; }
-        input { width: 100%; padding: 15px; margin-bottom: 12px; border: 1.2px solid #ddd; border-radius: 10px; outline: none; background: #f9f9f9; }
-        .btn { width: 100%; padding: 15px; background: var(--main); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .auth-box { position: absolute; inset: 0; background: white; z-index: 5000; display: flex; flex-direction: column; padding: 40px 25px; align-items: center; justify-content: center; }
+        .logo { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--main); margin-bottom: 20px; }
+        input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; outline: none; background: #f9f9f9; }
+        .btn { width: 100%; padding: 14px; background: var(--main); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+
+        /* Main Header */
+        header { background: var(--dark); color: white; padding: 12px 15px; display: flex; align-items: center; gap: 12px; z-index: 100; }
+        .p-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         
-        /* App UI */
-        header { background: var(--dark); color: white; padding: 12px 15px; display: flex; align-items: center; gap: 12px; }
-        .profile-trigger { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
+        /* Chat List */
+        #chat-list { flex: 1; overflow-y: auto; background: white; }
+        .user-row { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .user-row:active { background: #f9f9f9; }
+
+        /* Inbox Overlay */
+        #inbox { position: absolute; inset: 0; background: var(--chat-bg); z-index: 200; display: none; flex-direction: column; }
+        #msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .m-bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 15px; line-height: 1.4; word-wrap: break-word; }
+        .sent { align-self: flex-end; background: #dcf8c6; border-top-right-radius: 0; }
+        .rec { align-self: flex-start; background: #fff; border-top-left-radius: 0; }
         
-        .chat-list { flex: 1; overflow-y: auto; }
-        .user-card { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; position: relative; }
-        .user-card:active { background: #f0f0f0; }
-        .dot { position: absolute; left: 45px; bottom: 15px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; }
-        .online { background: var(--main); }
-        .offline { background: #bbb; }
+        .input-bar { padding: 10px; background: #f0f0f0; display: flex; gap: 10px; align-items: center; }
+        .input-bar input { margin-bottom: 0; border-radius: 25px; background: white; }
 
         .hidden { display: none !important; }
+        .online-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--main); border: 2px solid white; position: absolute; left: 45px; bottom: 15px; }
     </style>
 </head>
 <body>
@@ -39,38 +48,51 @@
 <div id="app-wrap">
     <div id="scr-login" class="auth-box hidden">
         <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="logo">
-        <h2 style="color:var(--dark)">Login</h2>
         <input type="number" id="l-ph" placeholder="Phone Number">
         <input type="password" id="l-ps" placeholder="Password">
         <button class="btn" onclick="handleLogin()">Sign In</button>
-        <p onclick="showAuth('reg')" style="margin-top:20px; color:var(--dark); cursor:pointer;">Create Account</p>
+        <p onclick="showAuth('reg')" style="cursor:pointer; color:var(--dark)">Create New Account</p>
     </div>
 
     <div id="scr-reg" class="auth-box hidden">
-        <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="logo">
-        <h2 style="color:var(--dark)">Join Lal Bilai</h2>
+        <h2 style="color:var(--dark)">Register</h2>
         <input type="text" id="r-name" placeholder="Full Name">
         <input type="number" id="r-ph" placeholder="Mobile Number">
-        <input type="password" id="r-ps" placeholder="Set Password">
-        <button class="btn" onclick="requestOTP()">Next</button>
-        <p onclick="showAuth('login')" style="margin-top:20px; color:var(--dark); cursor:pointer;">Back to Login</p>
+        <input type="password" id="r-ps" placeholder="Password">
+        <button class="btn" onclick="requestOTP()">Get OTP</button>
+        <p onclick="showAuth('login')" style="cursor:pointer; color:var(--dark)">Already have an account?</p>
     </div>
 
     <div id="scr-otp" class="auth-box hidden">
-        <h3>Verify OTP</h3>
-        <p>Admin has sent a code to your request.</p>
-        <input type="number" id="otp-input" placeholder="4 Digit Code" style="text-align:center; font-size:24px; letter-spacing:10px;">
-        <button class="btn" onclick="completeReg()">Confirm</button>
+        <h3>Verify Code</h3>
+        <input type="number" id="otp-input" placeholder="4 Digit OTP" style="text-align:center; font-size:22px;">
+        <button class="btn" onclick="completeReg()">Verify</button>
     </div>
 
-    <div id="main-app" class="hidden" style="display:flex; flex-direction:column; height:100%;">
+    <div id="scr-main" style="display:none; flex-direction:column; height:100%;">
         <header>
-            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="profile-trigger" onclick="alert('Profile Settings coming soon!')">
+            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="p-img">
             <span style="flex:1; font-weight:bold;">Lal Bilai</span>
-            <span onclick="addFriend()" style="font-size:22px; cursor:pointer;">➕</span>
-            <span onclick="logout()" style="margin-left:15px; cursor:pointer;">🚪</span>
+            <span onclick="addNew()" style="font-size:24px; cursor:pointer;">➕</span>
+            <span onclick="logout()" style="font-size:20px; cursor:pointer; margin-left:15px;">🚪</span>
         </header>
-        <div class="chat-list" id="chat-list"></div>
+        <div id="chat-list"></div>
+    </div>
+
+    <div id="inbox">
+        <header>
+            <span onclick="closeInbox()" style="cursor:pointer; font-size:20px;">⬅️</span>
+            <img id="inbox-img" src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="p-img" style="width:35px; height:35px;">
+            <div style="flex:1">
+                <div id="inbox-name" style="font-size:16px;">Name</div>
+                <div id="inbox-status" style="font-size:10px; font-weight:normal;">offline</div>
+            </div>
+        </header>
+        <div id="msg-area"></div>
+        <div class="input-bar">
+            <input type="text" id="m-input" placeholder="Type a message...">
+            <button class="btn" style="width:60px; margin-top:0;" onclick="sendMsg()">Send</button>
+        </div>
     </div>
 </div>
 
@@ -80,7 +102,8 @@
     const db = firebase.database();
 
     let myPhone = localStorage.getItem("lb_phone") ? atob(localStorage.getItem("lb_phone")) : null;
-    let tempUserData = null;
+    let activeChat = null;
+    let tempUser = null;
 
     function showAuth(mode) {
         document.getElementById('scr-login').classList.toggle('hidden', mode !== 'login');
@@ -88,7 +111,7 @@
         document.getElementById('scr-otp').classList.add('hidden');
     }
 
-    // --- AUTH LOGIC ---
+    // --- Authentication ---
     function handleLogin() {
         const ph = document.getElementById('l-ph').value;
         const ps = document.getElementById('l-ps').value;
@@ -96,7 +119,7 @@
             if(snap.exists() && snap.val().pass === ps) {
                 localStorage.setItem("lb_phone", btoa(ph));
                 location.reload();
-            } else alert("Wrong Number or Password!");
+            } else alert("Invalid Login!");
         });
     }
 
@@ -104,83 +127,94 @@
         const name = document.getElementById('r-name').value;
         const ph = document.getElementById('r-ph').value;
         const ps = document.getElementById('r-ps').value;
-        if(!name || ph.length < 10 || !ps) return alert("Fill all fields!");
-
+        if(!name || ph.length < 10 || !ps) return alert("Fill all info!");
         const code = Math.floor(1000 + Math.random() * 9000).toString();
-        tempUserData = { name, ph, ps, code };
-
-        db.ref('otp_requests/' + ph).set({ ph, code, name, time: Date.now() }).then(() => {
-            document.getElementById('scr-reg').classList.add('hidden');
-            document.getElementById('scr-otp').classList.remove('hidden');
+        tempUser = { name, ph, ps, code };
+        db.ref('otp_requests/' + ph).set({ ph, code, name }).then(() => {
+            showAuth('none'); document.getElementById('scr-otp').classList.remove('hidden');
         });
     }
 
     function completeReg() {
-        if(document.getElementById('otp-input').value === tempUserData.code) {
-            db.ref('users/' + btoa(tempUserData.ph)).set({
-                name: tempUserData.name,
-                phone: tempUserData.ph,
-                pass: tempUserData.ps
-            }).then(() => {
-                localStorage.setItem("lb_phone", btoa(tempUserData.ph));
+        if(document.getElementById('otp-input').value === tempUser.code) {
+            db.ref('users/' + btoa(tempUser.ph)).set({ name: tempUser.name, phone: tempUser.ph, pass: tempUser.ps }).then(() => {
+                localStorage.setItem("lb_phone", btoa(tempUser.ph));
                 location.reload();
             });
-        } else alert("Invalid OTP!");
+        } else alert("Wrong OTP!");
     }
 
-    // --- MAIN APP LOGIC ---
+    // --- Main App & Chat ---
     if(!myPhone) { showAuth('login'); } 
     else {
-        document.getElementById('main-app').classList.remove('hidden');
+        document.getElementById('scr-main').style.display = 'flex';
         db.ref('status/' + btoa(myPhone)).set(true);
         db.ref('status/' + btoa(myPhone)).onDisconnect().set(false);
-        loadChats();
+        loadChatList();
     }
 
-    function addFriend() {
-        const target = prompt("Enter Friend's Phone:");
-        if(!target) return;
-        if(target === myPhone) return alert("You can't add yourself!");
-
-        db.ref('users/' + btoa(target)).once('value', snap => {
-            if(snap.exists()){
-                const u = snap.val();
-                db.ref('contacts/' + btoa(myPhone) + '/' + btoa(target)).set({
-                    name: u.name, phone: target, lastMsgTime: Date.now()
-                }).then(() => alert("Friend Added!"));
+    function addNew() {
+        const ph = prompt("Enter Phone Number:");
+        if(!ph || ph === myPhone) return;
+        db.ref('users/' + btoa(ph)).once('value', snap => {
+            if(snap.exists()) {
+                db.ref('contacts/' + btoa(myPhone) + '/' + btoa(ph)).set({ name: snap.val().name, phone: ph, lastTime: Date.now() });
+                openInbox(ph, snap.val().name);
             } else alert("User not found!");
         });
     }
 
-    function loadChats() {
-        db.ref('contacts/' + btoa(myPhone)).orderByChild('lastMsgTime').on('value', snap => {
+    function loadChatList() {
+        db.ref('contacts/' + btoa(myPhone)).orderByChild('lastTime').on('value', snap => {
             const list = document.getElementById('chat-list');
             list.innerHTML = "";
-            let items = [];
-            snap.forEach(child => { items.unshift(child.val()); }); // Newest on top
-
-            items.forEach(u => {
-                db.ref('status/' + btoa(u.phone)).on('value', st => {
-                    const isOnline = st.val() === true;
-                    const existingRow = document.getElementById('row-' + btoa(u.phone));
-                    if(existingRow) existingRow.remove();
-
-                    list.innerHTML = `
-                        <div class="user-card" id="row-${btoa(u.phone)}" onclick="alert('Chat with ${u.name} opening...')">
-                            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" width="50" height="50" style="border-radius:50%">
-                            <div class="dot ${isOnline ? 'online' : 'offline'}"></div>
-                            <div style="margin-left:15px;"><b>${u.name}</b><br><small>${u.phone}</small></div>
-                        </div>` + list.innerHTML;
-                });
+            let rows = [];
+            snap.forEach(c => rows.unshift(c.val()));
+            rows.forEach(u => {
+                list.innerHTML += `
+                <div class="user-row" onclick="openInbox('${u.phone}', '${u.name}')">
+                    <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="p-img">
+                    <div style="margin-left:15px;"><b>${u.name}</b><br><small>${u.phone}</small></div>
+                </div>`;
             });
         });
     }
 
-    function logout() {
-        db.ref('status/' + btoa(myPhone)).set(false);
-        localStorage.clear();
-        location.reload();
+    function openInbox(ph, name) {
+        activeChat = ph;
+        document.getElementById('inbox-name').innerText = name;
+        document.getElementById('inbox').style.display = 'flex';
+        
+        // Status Check
+        db.ref('status/' + btoa(ph)).on('value', snap => {
+            document.getElementById('inbox-status').innerText = snap.val() ? 'online' : 'offline';
+            document.getElementById('inbox-status').style.color = snap.val() ? '#25D366' : '#999';
+        });
+
+        // Load Messages Real-time
+        const chatID = [myPhone, ph].sort().join("_");
+        db.ref('messages/' + chatID).on('value', snap => {
+            const area = document.getElementById('msg-area');
+            area.innerHTML = "";
+            snap.forEach(mNode => {
+                const m = mNode.val();
+                area.innerHTML += `<div class="m-bubble ${m.sender === myPhone ? 'sent' : 'rec'}">${m.text}</div>`;
+            });
+            area.scrollTop = area.scrollHeight;
+        });
     }
+
+    function sendMsg() {
+        const txt = document.getElementById('m-input').value;
+        if(!txt || !activeChat) return;
+        const chatID = [myPhone, activeChat].sort().join("_");
+        db.ref('messages/' + chatID).push({ sender: myPhone, text: txt, time: Date.now() });
+        db.ref('contacts/' + btoa(myPhone) + '/' + btoa(activeChat)).update({ lastTime: Date.now() });
+        document.getElementById('m-input').value = "";
+    }
+
+    function closeInbox() { document.getElementById('inbox').style.display = 'none'; activeChat = null; }
+    function logout() { db.ref('status/' + btoa(myPhone)).set(false); localStorage.clear(); location.reload(); }
 </script>
 </body>
 </html>
