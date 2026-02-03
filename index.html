@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lal Bilai - Powered by KAIYUM</title>
+    <title>Lal Bilai - No Country Code</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
-        :root { --red: #D32F2F; --white: #fff; --gray: #f8f9fa; }
+        :root { --red: #D32F2F; --white: #fff; --gray: #f9f9f9; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
@@ -24,25 +24,23 @@
         .screen { padding: 40px 30px; display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; position: absolute; inset: 0; background: #fff; z-index: 100; }
         .visible { display: flex; }
         
+        /* সরাসরি নাম্বার ইনপুট - কোনো কান্ট্রি কোড নেই */
         input { width: 100%; padding: 15px; border: 1.5px solid #eee; border-radius: 12px; outline: none; background: #fafafa; font-size: 16px; margin-bottom: 12px; transition: 0.3s; }
         input:focus { border-color: var(--red); background: #fff; }
         
         .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; background: var(--red); color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
         .link-text { font-size: 13px; color: var(--red); margin-top: 15px; cursor: pointer; font-weight: bold; }
 
-        /* Header & Profile Menu */
+        /* Header & Menu */
         header { background: var(--red); color: white; padding: 10px 15px; display: flex; align-items: center; gap: 12px; position: relative; z-index: 200; }
         .profile-btn { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; cursor: pointer; overflow: hidden; }
         .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
         
         #profile-menu { position: absolute; top: 60px; left: 15px; background: white; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: none; flex-direction: column; width: 170px; overflow: hidden; }
         #profile-menu button { background: none; border: none; padding: 12px; text-align: left; cursor: pointer; width: 100%; font-size: 14px; border-bottom: 1px solid #eee; }
-        #profile-menu button:hover { background: #f0f0f0; }
 
-        /* Footer Branding (Powered by KAIYUM) */
-        .powered-by { position: absolute; bottom: 15px; width: 100%; text-align: center; font-size: 12px; color: #999; font-weight: bold; letter-spacing: 1px; pointer-events: none; z-index: 50; }
-
-        #chat-list { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ccc; padding: 20px; }
+        /* Branding Footer */
+        .powered-by { position: absolute; bottom: 15px; width: 100%; text-align: center; font-size: 12px; color: #bbb; font-weight: bold; pointer-events: none; z-index: 50; }
     </style>
 </head>
 <body>
@@ -56,29 +54,30 @@
     </div>
 
     <div id="scr-login" class="screen visible">
-        <h2 style="margin-bottom: 25px;">Sign In</h2>
-        <input type="number" id="l-ph" placeholder="Phone Number">
-        <input type="password" id="l-ps" placeholder="Password">
+        <h2 style="margin-bottom: 25px; color: #333;">Sign In</h2>
+        <input type="number" id="l-ph" placeholder="মোবাইল নাম্বার দিন">
+        <input type="password" id="l-ps" placeholder="পাসওয়ার্ড দিন">
         <button class="btn" onclick="handleLogin()">Login</button>
-        <p class="link-text" onclick="showScr('scr-reg')">Registration (নতুন অ্যাকাউন্ট)</p>
-        <p class="link-text" style="color:#777; font-size: 11px;" onclick="showScr('scr-forgot')">Forgot Password?</p>
+        
+        <p class="link-text" onclick="showScr('scr-reg')">একউন্ট নেই? নতুন রেজিস্ট্রেশন করুন</p>
+        <p class="link-text" style="color:#888; font-size: 11px;" onclick="showScr('scr-forgot')">পাসওয়ার্ড ভুলে গেছেন?</p>
     </div>
 
     <div id="scr-reg" class="screen">
-        <h2 style="margin-bottom: 20px;">Join Lal Bilai</h2>
-        <input type="text" id="r-name" placeholder="Full Name">
-        <input type="number" id="r-ph" placeholder="Phone Number">
-        <input type="password" id="r-ps" placeholder="Set Password">
-        <input type="number" id="r-otp" placeholder="Secret Admin Code" style="border: 2px solid var(--red);">
-        <button class="btn" onclick="handleReg()">Register Now</button>
-        <p class="link-text" onclick="showScr('scr-login')">Back to Login</p>
+        <h2 style="margin-bottom: 20px;">নতুন অ্যাকাউন্ট খুলুন</h2>
+        <input type="text" id="r-name" placeholder="আপনার পুরো নাম">
+        <input type="number" id="r-ph" placeholder="মোবাইল নাম্বার">
+        <input type="password" id="r-ps" placeholder="নতুন পাসওয়ার্ড দিন">
+        <input type="number" id="r-otp" placeholder="অ্যাডমিন সিক্রেট কোড (OTP)">
+        <button class="btn" onclick="handleReg()">রেজিস্ট্রেশন করুন</button>
+        <p class="link-text" onclick="showScr('scr-login')">লগইন পেজে ফিরে যান</p>
     </div>
 
     <div id="scr-forgot" class="screen">
-        <h2>Recovery</h2>
-        <input type="number" id="f-ph" placeholder="Enter Registered Number">
-        <button class="btn" onclick="handleForgot()">Get Password</button>
-        <p class="link-text" onclick="showScr('scr-login')">Back to Login</p>
+        <h2>পাসওয়ার্ড উদ্ধার</h2>
+        <input type="number" id="f-ph" placeholder="আপনার রেজিস্টার্ড নাম্বার">
+        <button class="btn" onclick="handleForgot()">চেক করুন</button>
+        <p class="link-text" onclick="showScr('scr-login')">ফিরে যান</p>
     </div>
 
     <div id="scr-main" style="display:none; flex-direction:column; height:100%;">
@@ -89,14 +88,12 @@
             <span>Lal Bilai Messenger</span>
             
             <div id="profile-menu">
-                <button onclick="alert('Profile info loading...')">My Settings</button>
-                <button onclick="logout()" style="color: red; font-weight: bold;">Logout (লগ আউট করুন)</button>
+                <button onclick="logout()" style="color: red; font-weight: bold;">Log Out (লগ আউট)</button>
             </div>
         </header>
         
-        <div id="chat-list">
-            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" style="width: 60px; opacity: 0.2; margin-bottom: 10px;">
-            <p style="font-size: 14px;">Welcome to your secure chat world!</p>
+        <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#ddd;">
+            <p>আপনার নিরাপদ চ্যাট শুরু করুন।</p>
         </div>
     </div>
 </div>
@@ -125,38 +122,42 @@
         menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
     }
 
-    // ক্লোজ মেনু অন ক্লিক আউটসাইড
-    window.onclick = function(event) {
-        if (!event.target.closest('.profile-btn')) {
+    window.onclick = function(e) {
+        if (!e.target.closest('.profile-btn')) {
             document.getElementById('profile-menu').style.display = 'none';
         }
     }
 
+    // লগইন - সরাসরি নাম্বার চেক
     function handleLogin() {
         const ph = document.getElementById('l-ph').value;
         const ps = document.getElementById('l-ps').value;
-        if(!ph || !ps) return alert("Please fill all fields!");
+        if(!ph || !ps) return alert("দয়া করে সব তথ্য দিন!");
 
         db.ref('users/' + btoa(ph)).once('value', snap => {
             if(snap.exists() && snap.val().pass === ps) {
                 localStorage.setItem("lb_phone", btoa(ph));
                 showApp();
-            } else alert("Invalid phone or password!");
+            } else {
+                alert("আপনার একাউন্ট নেই অথবা তথ্য ভুল। নতুন রেজিস্ট্রেশন করুন!");
+                showScr('scr-reg');
+            }
         });
     }
 
+    // রেজিস্ট্রেশন লজিক
     function handleReg() {
         const name = document.getElementById('r-name').value;
         const ph = document.getElementById('r-ph').value;
         const ps = document.getElementById('r-ps').value;
         const otp = document.getElementById('r-otp').value;
 
-        if(!name || !ph || !ps || !otp) return alert("Fill all fields!");
-        if(otp !== SECRET_OTP) return alert("Wrong Secret Code!");
+        if(!name || !ph || !ps || !otp) return alert("সব ঘর পূরণ করুন!");
+        if(otp !== SECRET_OTP) return alert("ভুল সিক্রেট কোড!");
 
         const userKey = btoa(ph);
         db.ref('users/' + userKey).set({ name, pass: ps, phone: ph }).then(() => {
-            alert("Registration Success!");
+            alert("রেজিস্ট্রেশন সফল!");
             localStorage.setItem("lb_phone", userKey);
             showApp();
         });
@@ -166,8 +167,11 @@
         const ph = document.getElementById('f-ph').value;
         db.ref('users/' + btoa(ph)).once('value', snap => {
             if(snap.exists()) {
-                window.open(`https://wa.me/9660558687975?text=Recover my password for ${ph}`);
-            } else alert("Number not found. Register now!");
+                window.open(`https://wa.me/9660558687975?text=পাসওয়ার্ড ভুলে গেছি। নাম্বার: ${ph}`);
+            } else {
+                alert("এই নাম্বারে কোনো একাউন্ট নেই। নতুন রেজিস্ট্রেশন করুন!");
+                showScr('scr-reg');
+            }
         });
     }
 
