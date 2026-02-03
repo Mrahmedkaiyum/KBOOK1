@@ -2,56 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Lal Bilai Messenger</title>
 
-<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <style>
-:root{
-  --green:#25D366;
-  --dark:#075E54;
-  --bg:#f0f2f5;
-}
+:root{--g:#25D366;--d:#075E54}
 *{box-sizing:border-box;font-family:Segoe UI}
 body{margin:0;background:#000;display:flex;justify-content:center}
-#app{max-width:420px;width:100%;height:100vh;background:#fff;position:relative}
+#app{max-width:420px;width:100%;height:100vh;background:#fff}
 
-/* screens */
 .screen{display:none;height:100%;flex-direction:column}
 .show{display:flex}
-
-/* splash */
-#splash{justify-content:center;align-items:center}
-#splash img{width:120px;border-radius:50%}
-#splash p{margin-top:15px;color:#666}
-
-/* header */
-.header{background:var(--dark);color:#fff;padding:14px;font-weight:bold}
-
-/* auth */
+.header{background:var(--d);color:#fff;padding:14px;font-weight:bold}
 .form{padding:25px;display:flex;flex-direction:column;gap:12px}
 input{padding:12px;border-radius:8px;border:1px solid #ccc}
-button{padding:12px;border:none;border-radius:8px;background:var(--green);color:#fff;font-weight:bold}
-
-/* chat */
-#chatWin{flex:1;overflow-y:auto;background:#e5ddd5;padding:10px}
-.msg{max-width:75%;padding:8px 10px;border-radius:10px;font-size:14px}
-.me{background:#dcf8c6;margin-left:auto}
-.you{background:#fff}
-.tick{font-size:10px;margin-left:4px;color:#999}
-.seen{color:#34b7f1}
-
-.bottom{display:flex;padding:8px;background:#f0f0f0}
-.bottom input{flex:1;border-radius:20px}
-.bottom button{margin-left:6px;border-radius:50%;width:45px}
-
-/* nav */
-nav{display:flex;border-top:1px solid #ddd}
-nav div{flex:1;text-align:center;padding:10px;cursor:pointer}
-.active{color:var(--green);font-weight:bold}
+button{padding:12px;border:none;border-radius:8px;background:var(--g);color:#fff;font-weight:bold}
+.link{font-size:13px;text-align:center;color:#075E54;cursor:pointer}
 </style>
 </head>
 
@@ -59,61 +28,77 @@ nav div{flex:1;text-align:center;padding:10px;cursor:pointer}
 <div id="app">
 
 <!-- SPLASH -->
-<div id="splash" class="screen show">
-  <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg">
-  <p>Powered by Kaiyum</p>
+<div id="splash" class="screen show" style="justify-content:center;align-items:center">
+<img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" width="120">
+<p>Powered by Kaiyum</p>
 </div>
 
-<!-- AUTH -->
-<div id="auth" class="screen">
-  <div class="form">
-    <h3 id="authTitle">Login</h3>
-    <input id="name" placeholder="Your Name (Register only)">
-    <input id="phone" type="number" placeholder="Mobile (10–11 digit)"
-     oninput="if(this.value.length>11)this.value=this.value.slice(0,11)">
-    <input id="pass" type="password" placeholder="Password">
-    <button onclick="auth()">Continue</button>
-    <small onclick="toggle()" style="cursor:pointer">No account? Register</small>
-  </div>
+<!-- LOGIN -->
+<div id="login" class="screen">
+<div class="form">
+<h3>Login</h3>
+<input id="login_id" placeholder="Mobile or Username">
+<input id="login_pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<div class="link" onclick="show('forgot')">Forgot Password?</div>
+<div class="link" onclick="show('register')">Create new account</div>
+</div>
+</div>
+
+<!-- REGISTER -->
+<div id="register" class="screen">
+<div class="form">
+<h3>Register</h3>
+<input id="r_name" placeholder="Your Name">
+<input id="r_user" placeholder="Username (unique)">
+<input id="r_phone" type="number" placeholder="Mobile (10–11 digit)"
+ oninput="if(this.value.length>11)this.value=this.value.slice(0,11)">
+<input id="r_pass" type="password" placeholder="Password">
+<button onclick="checkUsername()">Next</button>
+</div>
+</div>
+
+<!-- OTP -->
+<div id="otp" class="screen">
+<div class="form">
+<h3>Verify OTP</h3>
+<input id="otp_val" placeholder="4 digit OTP">
+<button onclick="verifyOTP()">Confirm</button>
+</div>
+</div>
+
+<!-- FORGOT -->
+<div id="forgot" class="screen">
+<div class="form">
+<h3>Reset Password</h3>
+<input id="f_phone" placeholder="Registered Mobile">
+<button onclick="sendForgotOTP()">Send OTP</button>
+<div class="link" onclick="show('login')">Back to login</div>
+</div>
 </div>
 
 <!-- MAIN -->
 <div id="main" class="screen">
-  <div class="header">Lal Bilai</div>
-  <div id="chatList" style="flex:1;overflow:auto"></div>
-  <nav>
-    <div class="active" onclick="tab('chat')">💬 Chat</div>
-    <div onclick="tab('profile')">👤 Profile</div>
-  </nav>
-</div>
-
-<!-- CHAT -->
-<div id="chat" class="screen">
-  <div class="header" onclick="back()">⬅ Back</div>
-  <div id="chatWin"></div>
-  <div class="bottom">
-    <input id="msg" placeholder="Type message">
-    <button onclick="send()">🐱</button>
-  </div>
+<div class="header">Welcome to Lal Bilai</div>
 </div>
 
 </div>
 
 <script>
-// FIREBASE (তোর আগেরটাই)
+// FIREBASE
 firebase.initializeApp({
-  databaseURL:"https://kbook-5d175-default-rtdb.firebaseio.com/"
+ databaseURL:"https://kbook-5d175-default-rtdb.firebaseio.com/"
 });
 const db=firebase.database();
 
 // GLOBAL
+let tempUser=null;
 let myPhone=localStorage.lb?atob(localStorage.lb):null;
-let isLogin=true,chatWith=null;
 
 // START
 setTimeout(()=>{
- if(myPhone){loadMain()}
- else show('auth')
+ if(myPhone)show('main')
+ else show('login')
 },2000);
 
 // UI
@@ -121,67 +106,93 @@ function show(id){
  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'))
  document.getElementById(id).classList.add('show')
 }
-function toggle(){
- isLogin=!isLogin
- document.getElementById('authTitle').innerText=isLogin?'Login':'Register'
-}
-function tab(t){}
-function back(){show('main')}
 
-// AUTH
-function auth(){
- let p=phone.value,ps=pass.value,n=name.value
- if(p.length<10)return alert("Invalid number")
+// REGISTER STEP 1 — username check
+function checkUsername(){
+ let n=r_name.value.trim(),
+     u=r_user.value.trim().toLowerCase(),
+     p=r_phone.value,
+     ps=r_pass.value
 
- let key=btoa(p)
- if(isLogin){
-  db.ref('users/'+key).once('value',s=>{
-   if(s.exists()&&s.val().pass===ps){
-    localStorage.lb=btoa(p);location.reload()
-   }else alert("Wrong info")
-  })
- }else{
-  if(!n)return alert("Name required")
-  db.ref('users/'+key).set({
-   name:n,phone:p,pass:ps,time:Date.now()
-  }).then(()=>{
-   localStorage.lb=btoa(p);location.reload()
-  })
+ if(!n||!u||!ps||p.length<10){
+  alert("Fill all fields")
+  return
  }
-}
 
-// MAIN
-function loadMain(){
- show('main')
- db.ref('status/'+myPhone).set(true)
- db.ref('status/'+myPhone).onDisconnect().set(false)
-}
-
-// CHAT
-function openChat(p){
- chatWith=p;show('chat')
- let id=[myPhone,p].sort().join('_')
- db.ref('chats/'+id).on('value',s=>{
-  chatWin.innerHTML=''
-  s.forEach(n=>{
-   let m=n.val(),me=m.sender===myPhone
-   if(!me&&!m.seen)db.ref('chats/'+id+'/'+n.key).update({seen:true})
-   chatWin.innerHTML+=`
-   <div class="msg ${me?'me':'you'}">
-   ${m.text}
-   ${me?`<span class="tick ${m.seen?'seen':''}">✔✔</span>`:''}
-   </div>`
-  })
-  chatWin.scrollTop=chatWin.scrollHeight
+ // username unique check
+ db.ref("usernames/"+u).once("value",snap=>{
+  if(snap.exists()){
+   alert("Username already taken. Choose another one.")
+  }else{
+   let code=Math.floor(1000+Math.random()*9000).toString()
+   tempUser={n,u,p,ps,code}
+   db.ref("otp_requests/"+p).set({code})
+   show('otp')
+  }
  })
 }
-function send(){
- if(!msg.value||!chatWith)return
- let id=[myPhone,chatWith].sort().join('_')
- db.ref('chats/'+id).push({
-  sender:myPhone,text:msg.value,seen:false,time:Date.now()
+
+// REGISTER STEP 2 — OTP
+function verifyOTP(){
+ if(!tempUser)return
+ if(otp_val.value!==tempUser.code){
+  alert("Wrong OTP")
+  return
+ }
+
+ let phoneKey=btoa(tempUser.p)
+
+ // save user
+ db.ref("users/"+phoneKey).set({
+  name:tempUser.n,
+  username:tempUser.u,
+  phone:tempUser.p,
+  pass:tempUser.ps,
+  joined:Date.now()
+ }).then(()=>{
+  // reserve username
+  db.ref("usernames/"+tempUser.u).set(phoneKey)
+  localStorage.lb=phoneKey
+  location.reload()
  })
- msg.value=''
+}
+
+// LOGIN
+function login(){
+ let id=login_id.value.trim().toLowerCase(),
+     ps=login_pass.value
+
+ if(!id||!ps)return
+
+ // check by username
+ db.ref("usernames/"+id).once("value",uSnap=>{
+  if(uSnap.exists()){
+   let phoneKey=uSnap.val()
+   db.ref("users/"+phoneKey).once("value",s=>{
+    if(s.val().pass===ps){
+     localStorage.lb=phoneKey
+     location.reload()
+    }else alert("Wrong password")
+   })
+  }else{
+   // check by phone
+   let key=btoa(id)
+   db.ref("users/"+key).once("value",s=>{
+    if(s.exists()&&s.val().pass===ps){
+     localStorage.lb=key
+     location.reload()
+    }else alert("Account not found")
+   })
+  }
+ })
+}
+
+// FORGOT (basic)
+function sendForgotOTP(){
+ let p=f_phone.value
+ if(!p)return alert("Enter registered mobile")
+ alert("OTP sent to admin WhatsApp")
+ show('login')
 }
 </script>
 </body>
