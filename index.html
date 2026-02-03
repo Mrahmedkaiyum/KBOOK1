@@ -3,117 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lal Bilai - Messenger Pro</title>
+    <title>Lal Bilai - Premium Messenger</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        :root { --red: #D32F2F; --white: #ffffff; --gray: #f8f9fa; --text: #333; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --red: #D32F2F; --white: #fff; --gray: #f0f2f5; --text: #1c1e21; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: #000; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
         
-        #app-wrap { width: 100%; max-width: 400px; height: 100vh; background: var(--white); position: relative; display: flex; flex-direction: column; }
+        #app-wrap { width: 100%; max-width: 450px; height: 100vh; background: var(--white); position: relative; display: flex; flex-direction: column; }
 
-        /* Custom UI Components */
-        .screen { display: none; height: 100%; width: 100%; background: #fff; position: absolute; top: 0; left: 0; z-index: 100; padding-bottom: 70px; flex-direction: column; }
+        /* Custom UI Alerts */
+        #custom-alert { position: absolute; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .alert-box { background: #fff; padding: 25px; border-radius: 20px; width: 100%; text-align: center; border-bottom: 5px solid var(--red); }
+
+        /* Headers */
+        header { background: var(--red); color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; position: sticky; top: 0; z-index: 1000; }
+        
+        /* Screens */
+        .screen { display: none; height: 100%; width: 100%; position: absolute; top: 0; left: 0; background: #fff; z-index: 100; flex-direction: column; padding-bottom: 70px; }
         .visible { display: flex; }
-        
-        header { background: var(--red); color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        
-        /* Settings Styles */
-        .settings-container { padding: 20px; overflow-y: auto; }
-        .profile-section { text-align: center; margin-bottom: 25px; }
-        .profile-img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--red); padding: 3px; }
-        
-        .input-group { margin-bottom: 15px; text-align: left; }
-        .input-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; margin-left: 5px; }
-        input { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; outline: none; background: var(--gray); font-size: 15px; }
-        input:focus { border-color: var(--red); background: #fff; }
 
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; background: var(--red); color: white; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-        .btn-black { background: #333; }
-        .btn:active { transform: scale(0.98); }
+        /* Chat History List */
+        .chat-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .chat-item:active { background: #f9f9f9; }
+        .user-img { width: 50px; height: 50px; border-radius: 50%; background: #ddd; margin-right: 15px; }
+
+        /* Chat Window */
+        #chat-win { flex: 1; overflow-y: auto; padding: 15px; background: #e5ddd5; display: flex; flex-direction: column; gap: 8px; }
+        .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 15px; position: relative; }
+        .sent { align-self: flex-end; background: #dcf8c6; color: #000; border-top-right-radius: 0; }
+        .rec { align-self: flex-start; background: #fff; color: #000; border-top-left-radius: 0; }
+        
+        /* Inputs */
+        .input-area { padding: 10px; background: #f0f0f0; display: flex; align-items: center; gap: 8px; border-top: 1px solid #ddd; }
+        input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #ddd; outline: none; }
+        .circle-btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--red); color: #fff; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
         /* Bottom Nav */
-        nav { position: absolute; bottom: 0; width: 100%; height: 65px; background: #fff; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center; z-index: 500; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #888; font-size: 11px; }
-        .nav-item.active { color: var(--red); font-weight: bold; }
-        .nav-icon { font-size: 20px; margin-bottom: 2px; }
+        nav { position: absolute; bottom: 0; width: 100%; height: 65px; background: #fff; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center; z-index: 2000; }
+        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #888; cursor: pointer; font-size: 12px; }
+        .nav-tab.active { color: var(--red); font-weight: bold; }
 
-        /* Custom Alert */
-        #custom-alert { position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .alert-box { background: #fff; padding: 25px; border-radius: 20px; width: 100%; text-align: center; }
-        
-        #otp-overlay { position: absolute; inset: 0; background: #fff; z-index: 11000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
+        /* Powered By */
+        .powered { font-size: 10px; color: #bbb; position: absolute; bottom: 70px; width: 100%; text-align: center; z-index: 5; pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div id="app-wrap">
+    <div class="powered">Powered by KAIYUM</div>
+
     <div id="custom-alert">
         <div class="alert-box">
-            <p id="alert-msg" style="font-size: 16px; margin-bottom: 20px;"></p>
-            <button class="btn" onclick="closeAlert()">ঠিক আছে</button>
+            <p id="alert-msg"></p>
+            <button class="circle-btn" style="width: auto; padding: 0 20px; border-radius: 10px;" onclick="closeAlert()">Ok</button>
         </div>
     </div>
 
-    <div id="otp-overlay">
-        <h3>Verify New Number</h3>
-        <p style="text-align:center; font-size:13px; color:#666;">আপনার নতুন নাম্বারের জন্য এডমিনের কাছ থেকে ওটিপি সংগ্রহ করুন।</p>
-        <input type="number" id="v-new-otp" placeholder="Enter 4 Digit OTP" style="text-align:center; font-size:24px; letter-spacing:8px;">
-        <button class="btn" onclick="confirmPhoneChange()">Verify & Update</button>
-        <button class="btn btn-black" onclick="document.getElementById('otp-overlay').style.display='none'">Cancel</button>
+    <div id="scr-home" class="screen visible">
+        <header><span>Lal Bilai</span> <span onclick="switchScreen('scr-add')">➕</span></header>
+        <div id="history-list" style="flex:1; overflow-y:auto;">
+            <p style="text-align:center; color:#999; margin-top:20px;">কোনো চ্যাট হিস্টোরি নেই। নতুন বন্ধু যোগ করুন!</p>
+        </div>
     </div>
 
-    <div id="scr-chat" class="screen visible">
-        <header><span>Lal Bilai</span></header>
-        <div id="chat-win" style="flex:1; overflow-y:auto; padding:15px;"></div>
-        <div style="padding:10px; display:flex; gap:8px; border-top:1px solid #eee;">
-            <input type="text" id="msg-input" placeholder="Type..." style="margin-bottom:0; border-radius:25px;">
-            <button class="btn" style="width:70px; margin-top:0;" onclick="sendMsg()">Send</button>
+    <div id="scr-chat" class="screen">
+        <header><span onclick="switchScreen('scr-home')">⬅️</span> <span id="chat-user-name">Chat</span> <span></span></header>
+        <div id="chat-win"></div>
+        <div class="input-area">
+            <button class="circle-btn" style="background:#555;" onclick="sendVoice()">🎤</button>
+            <input type="text" id="msg-input" placeholder="মেসেজ লিখুন...">
+            <button class="circle-btn" onclick="sendMsg()">▶️</button>
         </div>
     </div>
 
     <div id="scr-settings" class="screen">
-        <header><span>Settings & Profile</span></header>
-        <div class="settings-container">
-            <div class="profile-section">
-                <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="profile-img">
-                <h3 id="set-name-display" style="margin:10px 0 5px 0;">User Name</h3>
-                <p id="set-ph-display" style="font-size:12px; color:#888; margin:0;">+8801xxx</p>
-            </div>
+        <header><span>Settings</span></header>
+        <div style="padding: 20px; text-align: center;">
+            <div class="user-img" style="width: 80px; height: 80px; margin: 0 auto 15px auto;"></div>
+            <input type="text" id="set-name" placeholder="আপনার পূর্ণ নাম" style="margin-bottom:10px;">
+            <input type="text" id="set-username" placeholder="@ইউজারনেম সেট করুন" style="margin-bottom:10px;">
+            <input type="number" id="set-age" placeholder="আপনার বয়স" style="margin-bottom:10px;">
+            <button class="circle-btn" style="width:100%; border-radius:10px;" onclick="saveProfile()">Save Profile</button>
+            <button class="circle-btn" style="width:100%; border-radius:10px; background:#333; margin-top:10px;" onclick="logout()">Logout</button>
+        </div>
+    </div>
 
-            <div class="input-group">
-                <label>Full Name</label>
-                <input type="text" id="edit-name" placeholder="আপনার নাম লিখুন">
-            </div>
-
-            <div class="input-group">
-                <label>Username (Unique)</label>
-                <input type="text" id="edit-username" placeholder="@username সেট করুন">
-            </div>
-
-            <div class="input-group">
-                <label>Mobile Number (Changing needs OTP)</label>
-                <input type="number" id="edit-phone" placeholder="নতুন মোবাইল নাম্বার">
-            </div>
-
-            <button class="btn" onclick="saveGeneralSettings()">Save Profile</button>
-            <button class="btn btn-black" onclick="requestPhoneUpdate()">Update Mobile Number</button>
-            <button class="btn" style="background:#888; margin-top:20px;" onclick="logout()">Logout</button>
+    <div id="scr-add" class="screen">
+        <header><span onclick="switchScreen('scr-home')">⬅️</span> <span>Add Friend</span></header>
+        <div style="padding: 20px;">
+            <input type="number" id="target-phone" placeholder="বন্ধুর মোবাইল নাম্বার">
+            <button class="circle-btn" style="width:100%; border-radius:10px; margin-top:15px;" onclick="startNewChat()">চ্যাট শুরু করুন</button>
         </div>
     </div>
 
     <nav>
-        <div class="nav-item active" onclick="showScreen('scr-chat', this)">
-            <span class="nav-icon">💬</span>
-            <span>Chats</span>
-        </div>
-        <div class="nav-item" onclick="showScreen('scr-settings', this)">
-            <span class="nav-icon">⚙️</span>
-            <span>Settings</span>
-        </div>
+        <div class="nav-tab active" onclick="switchScreen('scr-home', this)"><span>🏠</span><span>চ্যাট</span></div>
+        <div class="nav-tab" onclick="switchScreen('scr-settings', this)"><span>⚙️</span><span>সেটিংস</span></div>
     </nav>
 </div>
 
@@ -123,100 +112,93 @@
     const db = firebase.database();
 
     let myPhone = localStorage.getItem("lb_phone") ? atob(localStorage.getItem("lb_phone")) : null;
-    let tempNewPhone = "";
-    let tempNewOTP = "";
+    let activeChat = null;
 
-    function showAlert(msg) {
-        document.getElementById('alert-msg').innerText = msg;
-        document.getElementById('custom-alert').style.display = 'flex';
-    }
-    function closeAlert() { document.getElementById('custom-alert').style.display = 'none'; }
+    function showAlert(m) { document.getElementById('alert-msg').innerText = m; document.getElementById('custom-alert').style.display='flex'; }
+    function closeAlert() { document.getElementById('custom-alert').style.display='none'; }
 
-    function showScreen(id, el) {
+    function switchScreen(id, el) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
         document.getElementById(id).classList.add('visible');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        el.classList.add('active');
-        if(id === 'scr-settings') loadUserData();
-    }
-
-    function loadUserData() {
-        if(!myPhone) return;
-        db.ref('users/' + btoa(myPhone)).once('value', snap => {
-            const u = snap.val();
-            document.getElementById('set-name-display').innerText = u.name || "No Name";
-            document.getElementById('set-ph-display').innerText = u.phone;
-            document.getElementById('edit-name').value = u.name || "";
-            document.getElementById('edit-username').value = u.username || "";
-            document.getElementById('edit-phone').value = u.phone;
-        });
-    }
-
-    function saveGeneralSettings() {
-        const name = document.getElementById('edit-name').value;
-        const username = document.getElementById('edit-username').value;
-        
-        if(!name) return showAlert("নাম খালি রাখা যাবে না!");
-        
-        db.ref('users/' + btoa(myPhone)).update({
-            name: name,
-            username: username
-        }).then(() => {
-            showAlert("প্রোফাইল আপডেট সফল হয়েছে!");
-            loadUserData();
-        });
-    }
-
-    function requestPhoneUpdate() {
-        const newPh = document.getElementById('edit-phone').value;
-        if(newPh === myPhone) return showAlert("এটি আপনার বর্তমান নাম্বারই!");
-        if(newPh.length < 10) return showAlert("সঠিক নাম্বার দিন!");
-
-        const code = Math.floor(1000 + Math.random() * 9000).toString();
-        tempNewPhone = newPh;
-        tempNewOTP = code;
-
-        // ওটিপি রিকোয়েস্ট ডাটাবেসে পাঠানো
-        db.ref('otp_requests/' + newPh).set({
-            phone: newPh,
-            code: code,
-            type: "phone_change",
-            old_user: myPhone
-        }).then(() => {
-            document.getElementById('otp-overlay').style.display = 'flex';
-            showAlert("নতুন নাম্বারের ওটিপি রিকোয়েস্ট পাঠানো হয়েছে। এডমিনের কোডটি নিন।");
-        });
-    }
-
-    function confirmPhoneChange() {
-        const inputOTP = document.getElementById('v-new-otp').value;
-        if(inputOTP === tempNewOTP) {
-            // নতুন নাম্বারে ডাটা ট্রান্সফার
-            db.ref('users/' + btoa(myPhone)).once('value', snap => {
-                let userData = snap.val();
-                userData.phone = tempNewPhone;
-                
-                // নতুন নোডে সেভ এবং পুরাতন নোড ডিলিট
-                db.ref('users/' + btoa(tempNewPhone)).set(userData).then(() => {
-                    db.ref('users/' + btoa(myPhone)).remove();
-                    myPhone = tempNewPhone;
-                    localStorage.setItem("lb_phone", btoa(myPhone));
-                    document.getElementById('otp-overlay').style.display = 'none';
-                    showAlert("মোবাইল নাম্বার সফলভাবে পরিবর্তন হয়েছে!");
-                    loadUserData();
-                });
-            });
-        } else {
-            showAlert("ভুল ওটিপি কোড!");
+        if(el) {
+            document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
         }
+        if(id === 'scr-home') loadHistory();
     }
 
-    function logout() {
-        localStorage.clear();
-        location.reload();
+    // --- Profile & History ---
+    function saveProfile() {
+        const n = document.getElementById('set-name').value;
+        const u = document.getElementById('set-username').value;
+        const a = document.getElementById('set-age').value;
+        if(!n || !u) return showAlert("নাম এবং ইউজারনেম দিন!");
+        db.ref('users/' + btoa(myPhone)).update({ name: n, username: u, age: a })
+          .then(() => showAlert("প্রোফাইল আপডেট হয়েছে!"));
     }
 
-    window.onload = loadUserData;
+    function loadHistory() {
+        if(!myPhone) return;
+        db.ref('my_contacts/' + btoa(myPhone)).on('value', snap => {
+            const list = document.getElementById('history-list');
+            list.innerHTML = "";
+            if(!snap.exists()) list.innerHTML = `<p style="text-align:center; color:#999; margin-top:20px;">কোনো হিস্টোরি নেই!</p>`;
+            snap.forEach(child => {
+                const user = child.val();
+                list.innerHTML += `
+                    <div class="chat-item" onclick="openChat('${user.phone}', '${user.name}')">
+                        <div class="user-img"></div>
+                        <div>
+                            <div style="font-weight:bold;">${user.name}</div>
+                            <div style="font-size:12px; color:#888;">${user.phone}</div>
+                        </div>
+                    </div>`;
+            });
+        });
+    }
+
+    // --- Chat Logic ---
+    function startNewChat() {
+        const ph = document.getElementById('target-phone').value;
+        db.ref('users/' + btoa(ph)).once('value', snap => {
+            if(snap.exists()) {
+                const u = snap.val();
+                db.ref('my_contacts/' + btoa(myPhone) + '/' + btoa(ph)).set({ name: u.name, phone: ph });
+                openChat(ph, u.name);
+            } else showAlert("এই নাম্বারটি রেজিস্টার্ড নেই!");
+        });
+    }
+
+    function openChat(ph, name) {
+        activeChat = ph;
+        document.getElementById('chat-user-name').innerText = name;
+        switchScreen('scr-chat');
+        const chatId = [myPhone, ph].sort().join("_");
+        db.ref('chats/' + chatId).on('value', snap => {
+            const win = document.getElementById('chat-win');
+            win.innerHTML = "";
+            snap.forEach(msg => {
+                const m = msg.val();
+                win.innerHTML += `<div class="msg ${m.sender === myPhone ? 'sent' : 'rec'}">${m.text}</div>`;
+            });
+            win.scrollTop = win.scrollHeight;
+        });
+    }
+
+    function sendMsg() {
+        const t = document.getElementById('msg-input').value;
+        if(!t || !activeChat) return;
+        const chatId = [myPhone, activeChat].sort().join("_");
+        db.ref('chats/' + chatId).push({ sender: myPhone, text: t, time: Date.now() });
+        document.getElementById('msg-input').value = "";
+    }
+
+    function sendVoice() {
+        showAlert("ভয়েস মেসেজ শীঘ্রই আপডেট করা হবে! বর্তমানে টেক্সট ব্যবহার করুন।");
+    }
+
+    window.onload = () => { if(myPhone) loadHistory(); else showAlert("দয়া করে আগে লগইন করুন!"); };
+    function logout() { localStorage.clear(); location.reload(); }
 </script>
 </body>
 </html>
