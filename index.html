@@ -51,8 +51,7 @@ button{padding:12px;border:none;border-radius:8px;background:var(--g);color:#fff
 <h3>Register</h3>
 <input id="r_name" placeholder="Your Name">
 <input id="r_user" placeholder="Username (unique)">
-<input id="r_phone" type="number" placeholder="Mobile (10–11 digit)"
- oninput="if(this.value.length>11)this.value=this.value.slice(0,11)">
+<input id="r_phone" type="number" placeholder="Mobile (10–11 digit)" oninput="if(this.value.length>11)this.value=this.value.slice(0,11)">
 <input id="r_pass" type="password" placeholder="Password">
 <button onclick="checkUsername()">Next</button>
 </div>
@@ -64,16 +63,6 @@ button{padding:12px;border:none;border-radius:8px;background:var(--g);color:#fff
 <h3>Verify OTP</h3>
 <input id="otp_val" placeholder="4 digit OTP">
 <button onclick="verifyOTP()">Confirm</button>
-</div>
-</div>
-
-<!-- FORGOT -->
-<div id="forgot" class="screen">
-<div class="form">
-<h3>Reset Password</h3>
-<input id="f_phone" placeholder="Registered Mobile">
-<button onclick="sendForgotOTP()">Send OTP</button>
-<div class="link" onclick="show('login')">Back to login</div>
 </div>
 </div>
 
@@ -109,13 +98,14 @@ function show(id){
 
 // REGISTER STEP 1 — username check
 function checkUsername(){
- let n=r_name.value.trim(),
-     u=r_user.value.trim().toLowerCase(),
-     p=r_phone.value,
-     ps=r_pass.value
+ // DOM থেকে value ঠিকভাবে নিয়ে tempUser বানানো
+ const n = document.getElementById('r_name').value.trim()
+ const u = document.getElementById('r_user').value.trim().toLowerCase()
+ const p = document.getElementById('r_phone').value.trim()
+ const ps = document.getElementById('r_pass').value.trim()
 
  if(!n||!u||!ps||p.length<10){
-  alert("Fill all fields")
+  alert("Please fill all fields correctly (phone 10–11 digits)")
   return
  }
 
@@ -124,23 +114,24 @@ function checkUsername(){
   if(snap.exists()){
    alert("Username already taken. Choose another one.")
   }else{
-   let code=Math.floor(1000+Math.random()*9000).toString()
-   tempUser={n,u,p,ps,code}
+   const code=Math.floor(1000+Math.random()*9000).toString()
+   tempUser={n,u,p,ps,code} // tempUser ঠিকভাবে set
    db.ref("otp_requests/"+p).set({code})
-   show('otp')
+   show('otp') // OTP screen
   }
  })
 }
 
-// REGISTER STEP 2 — OTP
+// REGISTER STEP 2 — OTP verify
 function verifyOTP(){
  if(!tempUser)return
- if(otp_val.value!==tempUser.code){
+ const otpInput = document.getElementById('otp_val').value.trim()
+ if(otpInput!==tempUser.code){
   alert("Wrong OTP")
   return
  }
 
- let phoneKey=btoa(tempUser.p)
+ const phoneKey=btoa(tempUser.p)
 
  // save user
  db.ref("users/"+phoneKey).set({
@@ -153,46 +144,38 @@ function verifyOTP(){
   // reserve username
   db.ref("usernames/"+tempUser.u).set(phoneKey)
   localStorage.lb=phoneKey
-  location.reload()
+  show('main') // OTP confirm হলে main স্ক্রিনে redirect
  })
 }
 
 // LOGIN
 function login(){
- let id=login_id.value.trim().toLowerCase(),
-     ps=login_pass.value
+ const id=document.getElementById('login_id').value.trim().toLowerCase()
+ const ps=document.getElementById('login_pass').value.trim()
 
  if(!id||!ps)return
 
  // check by username
  db.ref("usernames/"+id).once("value",uSnap=>{
   if(uSnap.exists()){
-   let phoneKey=uSnap.val()
+   const phoneKey=uSnap.val()
    db.ref("users/"+phoneKey).once("value",s=>{
     if(s.val().pass===ps){
      localStorage.lb=phoneKey
-     location.reload()
+     show('main')
     }else alert("Wrong password")
    })
   }else{
    // check by phone
-   let key=btoa(id)
+   const key=btoa(id)
    db.ref("users/"+key).once("value",s=>{
     if(s.exists()&&s.val().pass===ps){
      localStorage.lb=key
-     location.reload()
+     show('main')
     }else alert("Account not found")
    })
   }
  })
-}
-
-// FORGOT (basic)
-function sendForgotOTP(){
- let p=f_phone.value
- if(!p)return alert("Enter registered mobile")
- alert("OTP sent to admin WhatsApp")
- show('login')
 }
 </script>
 </body>
