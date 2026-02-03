@@ -3,714 +3,687 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lal Bilai - Ultimate X Messenger</title>
+    <title>LAL BILAI X-TITAN | ULTIMATE OMNI ENGINE</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* -----------------------------------------------------------
-         1. CSS VARIABLES & THEME CONFIGURATION
-         -----------------------------------------------------------
+        /* ====================================================================================================
+          [CSS ENGINE: NEURAL-MORPHISM v5.0]
+          এই সেকশনটি পুরো অ্যাপের ইউজার ইন্টারফেস (UI) ডিজাইন করে। এখানে প্রতিটি পিক্সেল এবং এনিমেশন 
+          বিস্তারিতভাবে হ্যান্ডেল করা হয়েছে যাতে ইউজারদের চোখে এটি একদম প্রিমিয়াম মনে হয়।
+          ====================================================================================================
         */
+
         :root {
-            --primary-glow: #00ff88;
-            --primary-dark: #008069;
-            --whatsapp-green: #25d366;
-            --bg-deep: #0b141a;
-            --bg-panel: #111b21;
-            --bg-hover: #202c33;
-            --text-main: #e9edef;
-            --text-dim: #8696a0;
-            --bubble-sent: #005c4b;
-            --bubble-received: #202c33;
-            --accent-blue: #53bdeb;
-            --error-red: #ff5252;
-            --shadow-custom: 0 4px 20px rgba(0,0,0,0.5);
+            /* প্রাইমারি কালার প্যালেট - নিওন ভাইব */
+            --titan-primary-neon: #00ffaa;
+            --titan-secondary-cyan: #00e5ff;
+            --titan-danger-glow: #ff0044;
+            --titan-warning-amber: #ffcc00;
+            
+            /* ব্যাকগ্রাউন্ড ডেপথ সেটিংস */
+            --bg-ultra-deep: #010203;
+            --bg-surface-gradient: linear-gradient(145deg, #0a0f14, #020406);
+            --bg-glass-heavy: rgba(10, 15, 20, 0.95);
+            
+            /* বর্ডার এবং শ্যাডো প্রপার্টিজ */
+            --neon-border: 1px solid rgba(0, 255, 170, 0.2);
+            --neon-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+            --font-display: 'Orbitron', sans-serif;
+            --font-content: 'Rajdhani', sans-serif;
         }
 
-        /* -----------------------------------------------------------
-         2. CORE RESET & BODY STYLES
-         -----------------------------------------------------------
-        */
+        /* রিসেট এবং গ্লোবাল স্টাইলিং */
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            -webkit-font-smoothing: antialiased;
+            margin: 0; padding: 0; box-sizing: border-box;
+            outline: none; -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background: #000;
+            background-color: var(--bg-ultra-deep);
+            color: #ffffff;
+            font-family: var(--font-content);
             height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* স্ক্রলিং কন্ট্রোল করা হয়েছে ইন্টারনাল কন্টেইনার দিয়ে */
             display: flex;
             justify-content: center;
             align-items: center;
+        }
+
+        /* মেইন অ্যাপ্লিকেশন ফ্রেম - যা পুরো স্ক্রিন জুড়ে থাকবে কিন্তু কন্ট্রোলড হবে */
+        #titan-application-frame {
+            width: 100%;
+            max-width: 900px; /* ল্যাপটপ এবং মোবাইলে বড় দেখানোর জন্য বড় উইডথ */
+            height: 100vh;
+            background: var(--bg-surface-gradient);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
             overflow: hidden;
-            color: var(--text-main);
+            box-shadow: 0 0 100px rgba(0,0,0,1);
         }
 
-        /* -----------------------------------------------------------
-         3. MAIN APPLICATION WRAPPER
-         -----------------------------------------------------------
+        /* [UPDATE OVERLAY SYSTEM]
+          যখনই আপনি ডাটাবেসে নতুন ভার্সন পুশ করবেন, এই ডাইনামিক উইজেটটি ভেসে উঠবে।
         */
-        #app-shell {
-            width: 100%;
-            max-width: 500px;
-            height: 100vh;
-            background: var(--bg-deep);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 100px rgba(0, 255, 136, 0.2);
-            border-left: 1px solid #222;
-            border-right: 1px solid #222;
-        }
-
-        /* -----------------------------------------------------------
-         4. AUTHENTICATION SCREENS (LOGIN / REGISTER / OTP)
-         -----------------------------------------------------------
-        */
-        .auth-container {
+        #global-update-bridge {
             position: absolute;
-            inset: 0;
-            background: var(--bg-panel);
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 60px 40px;
-            transition: all 0.5s ease;
+            top: -150px; left: 50%;
+            transform: translateX(-50%);
+            width: 85%;
+            background: var(--bg-glass-heavy);
+            border: 2px solid var(--titan-primary-neon);
+            border-radius: 20px;
+            padding: 25px;
+            z-index: 1000000;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), var(--neon-shadow);
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
-        .auth-logo-box {
-            position: relative;
-            margin-bottom: 40px;
-        }
+        #global-update-bridge.deployed { top: 30px; }
 
-        .auth-logo-box img {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            border: 4px solid var(--primary-glow);
-            padding: 5px;
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
-        }
-
-        .auth-card {
-            width: 100%;
-            background: #1d2a33;
-            padding: 30px;
-            border-radius: 25px;
-            box-shadow: var(--shadow-custom);
-            border: 1px solid #2a3942;
-        }
-
-        .auth-card h2 {
-            margin-bottom: 25px;
-            font-size: 26px;
-            color: var(--primary-glow);
-        }
-
-        .input-group {
-            width: 100%;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 16px 20px;
-            background: #2a3942;
-            border: 1px solid transparent;
-            border-radius: 12px;
-            color: white;
-            font-size: 16px;
-            outline: none;
+        .update-title { font-family: var(--font-display); color: var(--titan-primary-neon); margin-bottom: 10px; font-size: 1.2rem; }
+        .update-msg { font-size: 14px; color: #ccc; margin-bottom: 20px; }
+        .update-action-btn {
+            background: var(--titan-primary-neon);
+            color: #000; padding: 12px 30px; border: none; border-radius: 10px;
+            font-family: var(--font-display); font-weight: 900; cursor: pointer;
             transition: 0.3s;
         }
 
-        .input-group input:focus {
-            border-color: var(--primary-glow);
-            background: #32444f;
-        }
-
-        .btn-glow {
-            width: 100%;
-            padding: 16px;
-            background: var(--primary-glow);
-            color: #000;
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 18px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
-            transition: 0.3s;
-        }
-
-        .btn-glow:active {
-            transform: scale(0.97);
-        }
-
-        /* -----------------------------------------------------------
-         5. MAIN MESSENGER DASHBOARD
-         -----------------------------------------------------------
+        /* [AUTH SYSTEM - BIOMETRIC VISUALS]
+          লগইন এবং রেজিস্ট্রেশন স্ক্রিন যা দেখতে একদম হাই-টেক মনে হবে।
         */
-        header {
-            background: #202c33;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 75px;
-            border-bottom: 1px solid #2a3942;
+        .auth-master-vortex {
+            position: absolute; inset: 0; z-index: 99999;
+            background: radial-gradient(circle at center, #0a1520 0%, #010203 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px; overflow-y: auto;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .app-brand {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(45deg, var(--primary-glow), var(--accent-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 20px;
-            font-size: 22px;
-            color: var(--text-dim);
-        }
-
-        .header-actions span {
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .header-actions span:hover {
-            color: var(--primary-glow);
-        }
-
-        /* -----------------------------------------------------------
-         6. CONTACT LIST AREA
-         -----------------------------------------------------------
-        */
-        #contact-container {
-            flex: 1;
-            overflow-y: auto;
-            background: var(--bg-deep);
-        }
-
-        .contact-tile {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #222d34;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .contact-tile:hover {
-            background: var(--bg-hover);
-        }
-
-        .tile-avatar {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
+        .auth-card-expansive {
+            width: 100%; max-width: 450px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(0, 255, 170, 0.1);
+            border-radius: 40px; padding: 50px;
+            backdrop-filter: blur(20px); text-align: center;
             position: relative;
         }
 
-        .tile-avatar img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
+        .auth-logo-shimmer {
+            width: 140px; height: 140px; border-radius: 50%;
+            border: 4px double var(--titan-primary-neon);
+            padding: 8px; margin-bottom: 30px;
+            box-shadow: var(--neon-shadow);
+            animation: pulse-ring 3s infinite;
         }
 
-        .online-badge {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 14px;
-            height: 14px;
-            background: #555;
-            border: 2px solid var(--bg-deep);
-            border-radius: 50%;
+        @keyframes pulse-ring {
+            0% { transform: scale(1); box-shadow: 0 0 10px var(--titan-primary-neon); }
+            50% { transform: scale(1.05); box-shadow: 0 0 30px var(--titan-primary-neon); }
+            100% { transform: scale(1); box-shadow: 0 0 10px var(--titan-primary-neon); }
         }
 
-        .online-badge.active {
-            background: var(--primary-glow);
-            box-shadow: 0 0 10px var(--primary-glow);
+        /* ইনপুট ফিল্ডের বিশাল স্টাইল */
+        .titan-field-wrapper { width: 100%; margin-bottom: 25px; position: relative; }
+        .titan-field-wrapper label {
+            display: block; text-align: left; font-family: var(--font-display);
+            font-size: 10px; color: var(--titan-primary-neon); letter-spacing: 2px;
+            margin-bottom: 8px; margin-left: 15px;
+        }
+        .titan-main-input {
+            width: 100%; background: #000; border: 1px solid #222;
+            padding: 20px 25px; border-radius: 15px; color: #fff;
+            font-size: 17px; transition: 0.4s;
+        }
+        .titan-main-input:focus {
+            border-color: var(--titan-primary-neon);
+            background: #05100a; box-shadow: 0 0 20px rgba(0, 255, 170, 0.1);
         }
 
-        .tile-content {
-            flex: 1;
-            margin-left: 15px;
+        .titan-primary-button {
+            width: 100%; padding: 22px; background: var(--titan-primary-neon);
+            color: #000; font-family: var(--font-display); font-weight: 900;
+            border: none; border-radius: 15px; cursor: pointer; font-size: 16px;
+            text-transform: uppercase; letter-spacing: 2px; transition: 0.5s;
+        }
+        .titan-primary-button:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 255, 170, 0.4);
         }
 
-        .tile-content h4 {
-            font-size: 17px;
-            color: var(--text-main);
-            margin-bottom: 4px;
-        }
-
-        .tile-content p {
-            font-size: 14px;
-            color: var(--text-dim);
-        }
-
-        /* -----------------------------------------------------------
-         7. REAL-TIME INBOX (THE CORE ENGINE)
-         -----------------------------------------------------------
+        /* [DASHBOARD CORE - SYSTEM INTERFACE]
+          লগইন করার পর ইউজার যা দেখবে।
         */
-        #inbox-panel {
-            position: absolute;
-            inset: 0;
-            background: var(--bg-chat);
-            z-index: 5000;
-            display: none;
-            flex-direction: column;
-            background-color: #0b141a;
+        .system-top-navigation {
+            height: 100px; background: rgba(0,0,0,0.8);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 30px; border-bottom: 1px solid #111;
+        }
+
+        .user-identity-cluster { display: flex; align-items: center; gap: 18px; }
+        .user-avatar-titan {
+            width: 55px; height: 55px; border-radius: 15px;
+            border: 2px solid var(--titan-primary-neon);
+            background: #111; object-fit: cover;
+        }
+
+        .identity-text h2 { font-family: var(--font-display); font-size: 18px; color: #fff; }
+        .identity-text span { font-size: 11px; color: var(--titan-primary-neon); font-weight: bold; letter-spacing: 1px; }
+
+        .system-tools { display: flex; gap: 25px; font-size: 22px; }
+        .system-tools i { color: #555; cursor: pointer; transition: 0.3s; }
+        .system-tools i:hover { color: var(--titan-primary-neon); transform: rotate(15deg); }
+
+        /* [CHRONIC CHAT LIST AREA]
+          বন্ধুদের তালিকা এবং তাদের স্ট্যাটাস এখানে দেখা যাবে।
+        */
+        .search-container-fluid { padding: 20px 30px; background: #030609; }
+        .search-bar-neural {
+            background: #000; border: 1px solid #111; border-radius: 12px;
+            display: flex; align-items: center; padding: 15px 25px; gap: 15px;
+        }
+        .search-bar-neural input {
+            background: transparent; border: none; color: #fff; width: 100%; font-size: 15px;
+        }
+
+        #titan-scroller-engine {
+            flex: 1; overflow-y: auto; padding-bottom: 50px;
+        }
+
+        .titan-contact-node {
+            display: flex; align-items: center; padding: 25px 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            cursor: pointer; position: relative; transition: 0.4s;
+        }
+        .titan-contact-node:hover { background: rgba(0, 255, 170, 0.03); border-left: 5px solid var(--titan-primary-neon); }
+
+        .node-avatar-wrap { position: relative; width: 65px; height: 65px; }
+        .node-avatar-wrap img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #222; }
+        .presence-orb {
+            position: absolute; bottom: 3px; right: 3px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #333; border: 3px solid #030609;
+        }
+        .presence-orb.online { background: var(--titan-primary-neon); box-shadow: 0 0 12px var(--titan-primary-neon); }
+
+        .node-details { flex: 1; margin-left: 20px; }
+        .node-details h3 { font-size: 20px; color: #eee; margin-bottom: 5px; }
+        .node-details p { font-size: 14px; color: #666; font-weight: 500; }
+
+        /* [QUANTUM INBOX - HIGH SPEED MESSAGING]
+          মেসেজ করার আসল জায়গা। এখানে এনিমেশনগুলো খুব স্মুথ রাখা হয়েছে।
+        */
+        #quantum-inbox-overlay {
+            position: absolute; inset: 0; background: var(--bg-ultra-deep);
+            z-index: 80000; display: none; flex-direction: column;
             background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-            background-blend-mode: multiply;
+            background-blend-mode: overlay;
         }
 
-        #chat-scroller {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .inbox-header-titan {
+            height: 90px; background: #000; display: flex; align-items: center;
+            padding: 0 25px; gap: 18px; border-bottom: 1px solid #111;
         }
 
-        .message-row {
-            display: flex;
-            width: 100%;
-            animation: fadeIn 0.3s ease;
+        .message-stream-vortex {
+            flex: 1; overflow-y: auto; padding: 30px;
+            display: flex; flex-direction: column; gap: 20px;
         }
 
-        .message-row.me { justify-content: flex-end; }
-        .message-row.them { justify-content: flex-start; }
+        .packet-row { display: flex; width: 100%; animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .packet-row.outgoing { justify-content: flex-end; }
+        .packet-row.incoming { justify-content: flex-start; }
 
-        .message-bubble {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 15px;
-            font-size: 15px;
-            line-height: 1.5;
-            position: relative;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        .packet-bubble {
+            max-width: 78%; padding: 18px 24px; border-radius: 25px;
+            font-size: 16.5px; line-height: 1.6; position: relative;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .outgoing .packet-bubble {
+            background: linear-gradient(135deg, #005c4b, #004538); color: #fff;
+            border-bottom-right-radius: 2px;
+        }
+        .incoming .packet-bubble {
+            background: #1e2a33; color: #fff;
+            border-bottom-left-radius: 2px;
         }
 
-        .me .message-bubble {
-            background: var(--bubble-sent);
-            color: white;
-            border-top-right-radius: 2px;
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .packet-timestamp {
+            font-size: 10px; color: rgba(255,255,255,0.4);
+            margin-top: 8px; display: block; text-align: right;
         }
 
-        .them .message-bubble {
-            background: var(--bubble-received);
-            color: white;
-            border-top-left-radius: 2px;
-        }
-
-        .msg-meta {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            font-size: 11px;
-            margin-top: 5px;
-            opacity: 0.7;
-        }
-
-        /* -----------------------------------------------------------
-         8. INPUT ENGINE STYLES
-         -----------------------------------------------------------
+        /* [COMMAND CENTER - INPUT DOCK]
         */
-        .input-dock {
-            background: #202c33;
-            padding: 12px 15px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .command-input-dock {
+            padding: 25px 30px; background: #000; display: flex;
+            align-items: center; gap: 20px; border-top: 1px solid #111;
         }
-
-        .text-input-field {
-            flex: 1;
-            background: #2a3942;
-            border-radius: 25px;
-            padding: 14px 22px;
-            color: white;
-            border: none;
-            outline: none;
-            font-size: 16px;
+        .neural-text-area {
+            flex: 1; background: #0a0a0a; border: 1px solid #222;
+            padding: 18px 25px; border-radius: 35px; color: #fff;
+            font-size: 16px; transition: 0.3s;
         }
+        .neural-text-area:focus { border-color: var(--titan-primary-neon); }
 
-        .send-circular-btn {
-            width: 52px;
-            height: 52px;
-            background: var(--primary-glow);
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            transition: 0.3s;
+        .dispatch-btn-circle {
+            width: 60px; height: 60px; background: var(--titan-primary-neon);
+            border-radius: 50%; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: #000; transition: 0.4s;
         }
+        .dispatch-btn-circle:hover { transform: scale(1.15) rotate(-15deg); box-shadow: var(--neon-shadow); }
 
-        .send-circular-btn:hover {
-            transform: rotate(-10deg) scale(1.1);
-        }
-
-        /* -----------------------------------------------------------
-         9. UTILITY CLASSES & KEYFRAMES
-         -----------------------------------------------------------
-        */
         .hidden { display: none !important; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* -----------------------------------------------------------
-         10. SCROLLBAR CUSTOMIZATION
-         -----------------------------------------------------------
-        */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
     </style>
 </head>
 <body>
 
-<div id="app-shell">
-    
-    <div id="auth-view" class="auth-container">
-        <div class="auth-logo-box">
-            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" alt="Lal Bilai">
-        </div>
+<div id="global-update-bridge">
+    <div class="update-title">CRITICAL SYSTEM UPDATE</div>
+    <div class="update-msg">সিস্টেমের নতুন ভার্সন উপলব্ধ। নিরবচ্ছিন্ন চ্যাটিং নিশ্চিত করতে এখনই আপডেট (রিফ্রেশ) করুন।</div>
+    <button class="update-action-btn" onclick="location.reload()">ACTIVATE UPDATE</button>
+</div>
 
-        <div class="auth-card">
-            <h2 id="ui-auth-title">লগইন সিস্টেম</h2>
+<div id="titan-application-frame">
+
+    <audio id="hfx-outgoing" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
+    <audio id="hfx-incoming" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
+
+    <div id="auth-gate-layer" class="auth-master-vortex">
+        <div class="auth-card-expansive">
+            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="auth-logo-shimmer">
+            <h2 id="auth-heading" style="font-family: var(--font-display); color: var(--titan-primary-neon); margin-bottom: 35px; letter-spacing: 2px;">TITAN SECURE ACCESS</h2>
             
-            <div id="reg-form-part" class="hidden">
-                <div class="input-group">
-                    <input type="text" id="in-name" placeholder="আপনার নাম">
+            <div id="auth-reg-block" class="hidden">
+                <div class="titan-field-wrapper">
+                    <label>USER ALIAS</label>
+                    <input type="text" id="in-user-name" class="titan-main-input" placeholder="আপনার পুরো নাম">
                 </div>
             </div>
 
-            <div class="input-group">
-                <input type="number" id="in-phone" placeholder="মোবাইল নাম্বার">
+            <div class="titan-field-wrapper">
+                <label>PHONIC IDENTITY</label>
+                <input type="number" id="in-user-ph" class="titan-main-input" placeholder="01XXXXXXXXX">
             </div>
 
-            <div class="input-group">
-                <input type="password" id="in-pass" placeholder="পাসওয়ার্ড">
+            <div class="titan-field-wrapper">
+                <label>ENCRYPTION PIN</label>
+                <input type="password" id="in-user-pk" class="titan-main-input" placeholder="৪-৬ ডিজিট পিন">
             </div>
 
-            <div id="otp-form-part" class="hidden">
-                <div class="input-group">
-                    <input type="number" id="in-otp" placeholder="৪ ডিজিট ওটিপি কোড">
+            <div id="auth-otp-block" class="hidden">
+                <div class="titan-field-wrapper">
+                    <label>SYSTEM OTP</label>
+                    <input type="number" id="in-user-otp" class="titan-main-input" placeholder="কোডটি এখানে দিন">
                 </div>
             </div>
 
-            <button class="btn-glow" id="btn-master-auth" onclick="mainAuthHandler()">প্রবেশ করুন</button>
+            <button class="titan-primary-button" id="auth-trigger-btn" onclick="TitanAuthModule.execute()">INITIALIZE SYSTEM</button>
             
-            <p id="ui-auth-toggle" style="margin-top: 20px; cursor: pointer; color: var(--primary-glow); font-size: 14px;" onclick="toggleAuthView()">অ্যাকাউন্ট নেই? নতুন খুলুন</p>
+            <p style="margin-top: 35px; font-size: 14px;">
+                <span id="auth-toggle-link" onclick="TitanAuthModule.toggle()" style="color: var(--titan-primary-neon); cursor: pointer; font-weight: 700;">নতুন ইউজার? রেজিস্ট্রেশন করুন</span>
+            </p>
         </div>
     </div>
 
-    <div id="main-interface" class="hidden" style="flex:1; display:flex; flex-direction:column;">
-        <header>
-            <div class="header-left">
-                <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" style="width:45px; height:45px; border-radius:50%; border:2px solid var(--primary-glow);">
-                <div class="app-brand">লাল বিলাই X</div>
+    <div id="dashboard-layer" class="hidden" style="flex:1; display:flex; flex-direction:column;">
+        <header class="system-top-navigation">
+            <div class="user-identity-cluster">
+                <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" class="user-avatar-titan">
+                <div class="identity-text">
+                    <h2 id="my-display-name">TITAN USER</h2>
+                    <span id="my-display-status">QUANTUM LINK ACTIVE</span>
+                </div>
             </div>
-            <div class="header-actions">
-                <span onclick="triggerAddFriend()">➕</span>
-                <span onclick="triggerLogout()">🚪</span>
+            <div class="system-tools">
+                <i class="fas fa-plus-square" title="বন্ধু যোগ করুন" onclick="TitanSocialModule.addContact()"></i>
+                <i class="fas fa-user-shield" title="সিকিউরিটি সেটিংস"></i>
+                <i class="fas fa-power-off" title="লগআউট" style="color:var(--titan-danger-glow);" onclick="TitanSystemModule.terminateSession()"></i>
             </div>
         </header>
 
-        <div style="padding: 10px 15px; background: var(--bg-deep);">
-            <div style="background: #202c33; padding: 10px 15px; border-radius: 10px; display: flex; align-items: center;">
-                <input type="text" placeholder="চ্যাট সার্চ করুন..." style="background:transparent; border:none; color:white; width:100%; outline:none; font-size:14px;">
+        <div class="search-container-fluid">
+            <div class="search-bar-neural">
+                <i class="fas fa-search" style="color:#444;"></i>
+                <input type="text" id="contact-search-query" placeholder="সার্চ নিউরাল কন্টাক্টস..." onkeyup="TitanSocialModule.filterList()">
             </div>
         </div>
 
-        <div id="contact-container">
+        <div id="titan-scroller-engine">
+            <div style="padding:100px 40px; text-align:center; opacity:0.2;">
+                <i class="fas fa-atom" style="font-size:60px; margin-bottom:20px;"></i>
+                <p style="font-family: var(--font-display);">SEARCHING FOR NEURAL LINKS...</p>
             </div>
+        </div>
     </div>
 
-    <div id="inbox-panel">
-        <header>
-            <div class="header-left">
-                <span onclick="exitInbox()" style="cursor:pointer; font-size:26px; color:var(--primary-glow); margin-right:10px;">⬅</span>
-                <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" style="width:40px; height:40px; border-radius:50%;">
-                <div>
-                    <div id="ui-target-name" style="font-weight:bold; font-size:17px; color:white;">নাম নেই</div>
-                    <div id="ui-typing-indicator" style="font-size:11px; color:var(--primary-glow); display:none;">টাইপ করছে...</div>
-                </div>
+    <div id="quantum-inbox-overlay">
+        <header class="inbox-header-titan">
+            <i class="fas fa-arrow-left" onclick="TitanMessagingModule.close()" style="font-size:24px; color:var(--titan-primary-neon); cursor:pointer;"></i>
+            <img id="active-target-avatar" src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg" style="width:45px; height:45px; border-radius:12px; border:1px solid var(--titan-primary-neon);">
+            <div style="flex:1">
+                <div id="active-target-name" style="font-weight:bold; font-size:20px; letter-spacing:1px;">LINK_ID_NULL</div>
+                <div id="active-target-pulse" style="font-size:11px; color:var(--titan-primary-neon); display:none;">TYPING_SIGNAL_DETECTED...</div>
+            </div>
+            <div class="system-tools">
+                <i class="fas fa-phone-alt" style="font-size:18px;"></i>
+                <i class="fas fa-video" style="font-size:18px;"></i>
             </div>
         </header>
 
-        <div id="chat-scroller">
+        <div id="packet-vortex" class="message-stream-vortex">
             </div>
 
-        <div class="input-dock">
-            <input type="text" id="field-msg" class="text-input-field" placeholder="মেসেজ লিখুন..." oninput="pushTypingSignal()">
-            <button class="send-circular-btn" onclick="executeSendMessage()">➤</button>
+        <div class="command-input-dock">
+            <i class="fas fa-plus-circle" style="color:#555; font-size:22px; cursor:pointer;"></i>
+            <input type="text" id="packet-input-field" class="neural-text-area" placeholder="মেসেজ প্যাকেট টাইপ করুন..." oninput="TitanMessagingModule.emitPulse()">
+            <button class="dispatch-btn-circle" onclick="TitanMessagingModule.dispatchPacket()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
         </div>
     </div>
 
 </div>
 
 <script>
-    /* -----------------------------------------------------------
-     11. FIREBASE CORE SYSTEM INITIALIZATION
-     -----------------------------------------------------------
+    /* ====================================================================================================
+      [TITAN KERNEL: THE HEART OF APPLICATION]
+      এখানে জাভাস্ক্রিপ্ট ব্যবহার করে একটি বিশাল লজিক্যাল ইঞ্জিন তৈরি করা হয়েছে। 
+      কোডটি ছোট ছোট ফাংশনের বদলে বিশাল 'Module Objects' এ সাজানো।
+      ====================================================================================================
     */
-    const firebase_app_config = { databaseURL: "https://kbook-5d175-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebase_app_config);
-    const kernel_db = firebase.database();
 
-    /* -----------------------------------------------------------
-     12. GLOBAL APPLICATION STATE
-     -----------------------------------------------------------
-    */
-    let SYSTEM_USER_ID = localStorage.getItem("lb_token") ? atob(localStorage.getItem("lb_token")) : null;
-    let ACTIVE_CHAT_PARTNER = null;
-    let IS_REGISTRATION_MODE = false;
-    let SESSION_OTP_CODE = null;
-    let TYPING_DEBOUNCE_TIMER;
+    // A. DATABASE CONNECTION CONSTANTS
+    const FIREBASE_TITAN_URL = "https://kbook-5d175-default-rtdb.firebaseio.com/";
+    firebase.initializeApp({ databaseURL: FIREBASE_TITAN_URL });
+    const TITAN_DB = firebase.database();
 
-    /* -----------------------------------------------------------
-     13. AUTHENTICATION LOGIC UNIT
-     -----------------------------------------------------------
-    */
-    function toggleAuthView() {
-        IS_REGISTRATION_MODE = !IS_REGISTRATION_MODE;
-        document.getElementById('ui-auth-title').innerText = IS_REGISTRATION_MODE ? "রেজিস্ট্রেশন" : "লগইন সিস্টেম";
-        document.getElementById('reg-form-part').classList.toggle('hidden', !IS_REGISTRATION_MODE);
-        document.getElementById('btn-master-auth').innerText = IS_REGISTRATION_MODE ? "ওটিপি পাঠান" : "প্রবেশ করুন";
-        document.getElementById('ui-auth-toggle').innerText = IS_REGISTRATION_MODE ? "ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন" : "অ্যাকাউন্ট নেই? নতুন খুলুন";
-    }
-
-    async function mainAuthHandler() {
-        const ph = document.getElementById('in-phone').value;
-        const ps = document.getElementById('in-pass').value;
-
-        if (ph.length < 10) return alert("সঠিক মোবাইল নাম্বার দিন");
-
-        if (!IS_REGISTRATION_MODE) {
-            // LOGIN FLOW
-            kernel_db.ref('users/' + btoa(ph)).once('value', snapshot => {
-                if (snapshot.exists() && snapshot.val().ps === ps) {
-                    finalizeSession(ph);
-                } else {
-                    alert("পাসওয়ার্ড বা নাম্বার ভুল!");
-                }
-            });
-        } else {
-            // REGISTRATION FLOW
-            if (!SESSION_OTP_CODE) {
-                SESSION_OTP_CODE = Math.floor(1000 + Math.random() * 9000).toString();
-                document.getElementById('otp-form-part').classList.remove('hidden');
-                document.getElementById('btn-master-auth').innerText = "ভেরিফাই করুন";
-                alert("আপনার লাল বিলাই ওটিপি কোড: " + SESSION_OTP_CODE);
-            } else {
-                const user_otp = document.getElementById('in-otp').value;
-                if (user_otp === SESSION_OTP_CODE) {
-                    const name = document.getElementById('in-name').value || "নতুন ইউজার";
-                    kernel_db.ref('users/' + btoa(ph)).set({ name, ph, ps, ts: Date.now() }).then(() => {
-                        finalizeSession(ph);
-                    });
-                } else {
-                    alert("ওটিপি কোড সঠিক নয়!");
-                }
-            }
-        }
-    }
-
-    function finalizeSession(ph) {
-        localStorage.setItem("lb_token", btoa(ph));
-        location.reload();
-    }
-
-    /* -----------------------------------------------------------
-     14. CORE ENGINE INITIALIZATION
-     -----------------------------------------------------------
-    */
-    if (SYSTEM_USER_ID) {
-        document.getElementById('auth-view').classList.add('hidden');
-        document.getElementById('main-interface').classList.remove('hidden');
-        
-        // PRESENCE SYSTEM
-        kernel_db.ref('online_heartbeat/' + btoa(SYSTEM_USER_ID)).set(true);
-        kernel_db.ref('online_heartbeat/' + btoa(SYSTEM_USER_ID)).onDisconnect().set(false);
-        
-        initContactListEngine();
-    }
-
-    /* -----------------------------------------------------------
-     15. CONTACT & SEARCH ENGINE
-     -----------------------------------------------------------
-    */
-    function triggerAddFriend() {
-        const target = prompt("বন্ধুর নাম্বার লিখুন:");
-        if (!target || target === SYSTEM_USER_ID) return;
-
-        kernel_db.ref('users/' + btoa(target)).once('value', snap => {
-            if (snap.exists()) {
-                const data = snap.val();
-                // CREATE BIDIRECTIONAL CONTACTS
-                kernel_db.ref('contacts/' + btoa(SYSTEM_USER_ID) + '/' + btoa(target)).set({ name: data.name, ph: target, sync: Date.now() });
-                kernel_db.ref('contacts/' + btoa(target) + '/' + btoa(SYSTEM_USER_ID)).set({ name: "বন্ধু", ph: SYSTEM_USER_ID, sync: Date.now() });
-                openInboxEngine(target, data.name);
-            } else {
-                alert("এই ইউজারটি নিবন্ধিত নয়!");
+    // B. SYSTEM VERSIONING & LIVE UPDATE LOGIC
+    // আপনি যখনই নতুন আপডেট দিবেন, ডাটাবেসে 'system_control/v' এর মান বাড়িয়ে দিবেন।
+    const CURRENT_SYS_VERSION = "50.0"; 
+    function checkTitanUpdates() {
+        console.log("System: Checking for updates...");
+        TITAN_DB.ref('system_control/v').on('value', (snap) => {
+            if (snap.exists() && snap.val() !== CURRENT_SYS_VERSION) {
+                document.getElementById('global-update-bridge').classList.add('deployed');
+                console.warn("System: Update detected. Interface modification required.");
             }
         });
     }
 
-    function initContactListEngine() {
-        kernel_db.ref('contacts/' + btoa(SYSTEM_USER_ID)).orderByChild('sync').on('value', snap => {
-            const list_div = document.getElementById('contact-container');
-            list_div.innerHTML = "";
-            let chat_nodes = [];
-            snap.forEach(c => chat_nodes.unshift(c.val()));
+    // C. GLOBAL STATE MANAGEMENT
+    let SESSION_IDENTITY = localStorage.getItem("titan_auth_key") ? atob(localStorage.getItem("titan_auth_key")) : null;
+    let ACTIVE_PARTNER_PH = null;
+    let IS_REGISTRATION_FLOW = false;
+    let GENERATED_OTP_VAL = null;
 
-            chat_nodes.forEach(user => {
-                // REAL-TIME ONLINE LISTENER
-                kernel_db.ref('online_heartbeat/' + btoa(user.ph)).on('value', status_snap => {
-                    const is_online = status_snap.val() === true;
-                    const tile_id = "tile-" + btoa(user.ph);
-                    if (document.getElementById(tile_id)) document.getElementById(tile_id).remove();
+    // D. [TITAN AUTH MODULE] - হ্যান্ডেল করে লগইন এবং রেজিস্ট্রেশন
+    const TitanAuthModule = {
+        toggle: function() {
+            IS_REGISTRATION_FLOW = !IS_REGISTRATION_FLOW;
+            document.getElementById('auth-heading').innerText = IS_REGISTRATION_FLOW ? "CREATE OMNI ACCOUNT" : "TITAN SECURE ACCESS";
+            document.getElementById('auth-reg-block').classList.toggle('hidden', !IS_REGISTRATION_FLOW);
+            document.getElementById('auth-trigger-btn').innerText = IS_REGISTRATION_FLOW ? "GENERATE SECURITY OTP" : "INITIALIZE SYSTEM";
+            document.getElementById('auth-toggle-link').innerText = IS_REGISTRATION_FLOW ? "ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন" : "নতুন ইউজার? রেজিস্ট্রেশন করুন";
+        },
 
-                    const tile = document.createElement('div');
-                    tile.id = tile_id;
-                    tile.className = 'contact-tile';
-                    tile.onclick = () => openInboxEngine(user.ph, user.name);
-                    tile.innerHTML = `
-                        <div class="tile-avatar">
-                            <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg">
-                            <div class="online-badge ${is_online ? 'active' : ''}"></div>
-                        </div>
-                        <div class="tile-content">
-                            <h4>${user.name}</h4>
-                            <p>${user.ph}</p>
-                        </div>
-                    `;
-                    list_div.prepend(tile);
+        execute: async function() {
+            const ph = document.getElementById('in-user-ph').value;
+            const pk = document.getElementById('in-user-pk').value;
+
+            if (ph.length < 10 || pk.length < 4) {
+                alert("ত্রুটি: মোবাইল নাম্বার বা পিন কোড অসম্পূর্ণ!");
+                return;
+            }
+
+            if (!IS_REGISTRATION_FLOW) {
+                // লগইন প্রোটোকল
+                TITAN_DB.ref('titan_v50/users/' + btoa(ph)).once('value', (snapshot) => {
+                    if (snapshot.exists() && snapshot.val().pk === pk) {
+                        this.finalize(ph);
+                    } else {
+                        alert("একসেস ডিনাইড: আপনার ক্রেডেনশিয়াল সঠিক নয়!");
+                    }
+                });
+            } else {
+                // রেজিস্ট্রেশন প্রোটোকল
+                if (!GENERATED_OTP_VAL) {
+                    GENERATED_OTP_VAL = Math.floor(1000 + Math.random() * 9000).toString();
+                    // ওটিপি ডাটাবেসে টেম্পোরারি সেভ করা হচ্ছে
+                    TITAN_DB.ref('titan_v50/system/temp_otp/' + ph).set({ code: GENERATED_OTP_VAL, timestamp: Date.now() });
+                    document.getElementById('auth-otp-block').classList.remove('hidden');
+                    document.getElementById('auth-trigger-btn').innerText = "VERIFY & CREATE ACCOUNT";
+                    alert("আপনার সিকিউরিটি ওটিপি: " + GENERATED_OTP_VAL);
+                } else {
+                    const userOtp = document.getElementById('in-user-otp').value;
+                    if (userOtp === GENERATED_OTP_VAL) {
+                        const name = document.getElementById('in-user-name').value || "Bilai_User";
+                        const userData = { name: name, ph: ph, pk: pk, created_at: Date.now() };
+                        TITAN_DB.ref('titan_v50/users/' + btoa(ph)).set(userData).then(() => {
+                            this.finalize(ph);
+                        });
+                    } else {
+                        alert("ভুল ওটিপি! আবার চেষ্টা করুন।");
+                    }
+                }
+            }
+        },
+
+        finalize: function(ph) {
+            localStorage.setItem("titan_auth_key", btoa(ph));
+            location.reload(); // রিলোড দিয়ে মেইন ইন্টারফেস লোড করা
+        }
+    };
+
+    // E. [TITAN SOCIAL MODULE] - কন্টাক্ট লিস্ট এবং ফ্রেন্ডশিপ হ্যান্ডেল করে
+    const TitanSocialModule = {
+        addContact: function() {
+            const ph = prompt("আপনার বন্ধুর মোবাইল নাম্বার দিন (Ex: 017XXXXXXXX):");
+            if (!ph || ph === SESSION_IDENTITY) return;
+
+            TITAN_DB.ref('titan_v50/users/' + btoa(ph)).once('value', (snap) => {
+                if (snap.exists()) {
+                    const u = snap.val();
+                    // ডুয়াল লিঙ্কিং ডাটাবেস আর্কিটেকচার (উভয় পক্ষের লিস্টে অ্যাড হবে)
+                    TITAN_DB.ref('titan_v50/connections/' + btoa(SESSION_IDENTITY) + '/' + btoa(ph)).set({ name: u.name, ph: ph, sync_time: Date.now() });
+                    TITAN_DB.ref('titan_v50/connections/' + btoa(ph) + '/' + btoa(SESSION_IDENTITY)).set({ name: "TITAN FRIEND", ph: SESSION_IDENTITY, sync_time: Date.now() });
+                    alert(u.name + " এর সাথে নিউরাল লিঙ্ক সফল হয়েছে!");
+                    TitanMessagingModule.open(ph, u.name);
+                } else {
+                    alert("এই নাম্বারটি টাইটান সিস্টেমে রেজিস্টার্ড নয়!");
+                }
+            });
+        },
+
+        loadContacts: function() {
+            console.log("SocialEngine: Syncing contacts...");
+            TITAN_DB.ref('titan_v50/connections/' + btoa(SESSION_IDENTITY)).orderByChild('sync_time').on('value', (snapshot) => {
+                const listContainer = document.getElementById('titan-scroller-engine');
+                listContainer.innerHTML = "";
+                let contactsArray = [];
+                snapshot.forEach(child => contactsArray.unshift(child.val()));
+
+                if (contactsArray.length === 0) {
+                    listContainer.innerHTML = `<div style="padding:100px 40px; text-align:center; opacity:0.2;"><p>No Connections Found.</p></div>`;
+                    return;
+                }
+
+                contactsArray.forEach(user => {
+                    // অনলাইন স্ট্যাটাস রিয়েল-টাইম চেক
+                    TITAN_DB.ref('titan_v50/presence/' + btoa(user.ph)).on('value', (pSnap) => {
+                        const isOnline = pSnap.val() === true;
+                        const elementId = "node-" + btoa(user.ph);
+                        if (document.getElementById(elementId)) document.getElementById(elementId).remove();
+
+                        const nodeDiv = document.createElement('div');
+                        nodeDiv.id = elementId;
+                        nodeDiv.className = 'titan-contact-node';
+                        nodeDiv.onclick = () => TitanMessagingModule.open(user.ph, user.name);
+                        nodeDiv.innerHTML = `
+                            <div class="node-avatar-wrap">
+                                <img src="https://image2url.com/r2/default/images/1770055773770-4e97be2e-90a9-48f4-b20b-bb418a6d3c91.jpg">
+                                <div class="presence-orb ${isOnline ? 'online' : ''}"></div>
+                            </div>
+                            <div class="node-details">
+                                <h3>${user.name}</h3>
+                                <p>${user.ph}</p>
+                            </div>
+                        `;
+                        listContainer.prepend(nodeDiv);
+                    });
                 });
             });
-        });
-    }
+        },
 
-    /* -----------------------------------------------------------
-     16. REAL-TIME MESSAGING KERNEL
-     -----------------------------------------------------------
-    */
-    function openInboxEngine(partner_ph, partner_name) {
-        ACTIVE_CHAT_PARTNER = partner_ph;
-        document.getElementById('ui-target-name').innerText = partner_name;
-        document.getElementById('inbox-panel').style.display = 'flex';
-        
-        const CHAT_CHANNEL_ID = [SYSTEM_USER_ID, partner_ph].sort().join("___");
-        
-        // TYPING SIGNAL LISTENER
-        kernel_db.ref('typing_engine/' + btoa(partner_ph) + '/' + btoa(SYSTEM_USER_ID)).on('value', snap => {
-            document.getElementById('ui-typing-indicator').style.display = snap.val() ? 'block' : 'none';
-        });
+        filterList: function() {
+            const query = document.getElementById('contact-search-query').value.toLowerCase();
+            document.querySelectorAll('.titan-contact-node').forEach(node => {
+                const content = node.innerText.toLowerCase();
+                node.style.display = content.includes(query) ? "flex" : "none";
+            });
+        }
+    };
 
-        // FULL MESSAGE SYNC ENGINE
-        kernel_db.ref('secure_vault/' + CHAT_CHANNEL_ID).on('value', snap => {
-            const scroller = document.getElementById('chat-scroller');
-            scroller.innerHTML = "";
-            snap.forEach(msg_node => {
-                const data = msg_node.val();
-                const is_me = data.s === SYSTEM_USER_ID;
-                const clock = new Date(data.t).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    // F. [TITAN MESSAGING MODULE] - সবথেকে বড় লজিক সেকশন (চ্যাটিং)
+    const TitanMessagingModule = {
+        open: function(ph, name) {
+            ACTIVE_PARTNER_PH = ph;
+            document.getElementById('active-target-name').innerText = name;
+            document.getElementById('quantum-inbox-overlay').style.display = 'flex';
+            
+            // ইউনিক চ্যানেল আইডি তৈরি করা (উভয় পক্ষের জন্য একই হবে)
+            const CHANNEL_ID = [btoa(SESSION_IDENTITY), btoa(ph)].sort().join("_X_TITAN_X_");
+            
+            // টাইপিং ডিটেকশন লজিক
+            TITAN_DB.ref('titan_v50/signals/' + btoa(ph) + '/' + btoa(SESSION_IDENTITY)).on('value', (snap) => {
+                document.getElementById('active-target-pulse').style.display = snap.val() ? 'block' : 'none';
+            });
+
+            // রিয়েল-টাইম মেসেজ স্ট্রিমিং
+            TITAN_DB.ref('titan_v50/vortex/' + CHANNEL_ID).on('value', (snapshot) => {
+                const display = document.getElementById('packet-vortex');
+                display.innerHTML = "";
+                let msgCount = 0;
                 
-                scroller.innerHTML += `
-                    <div class="message-row ${is_me ? 'me' : 'them'}">
-                        <div class="message-bubble">
-                            ${data.x}
-                            <div class="msg-meta">
-                                ${clock} ${is_me ? '<span class="double-tick">✔✔</span>' : ''}
+                snapshot.forEach(msgNode => {
+                    const data = msgNode.val();
+                    const isMe = data.sender === SESSION_IDENTITY;
+                    const timestamp = new Date(data.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    
+                    display.innerHTML += `
+                        <div class="packet-row ${isMe ? 'outgoing' : 'incoming'}">
+                            <div class="packet-bubble">
+                                ${data.message}
+                                <span class="packet-timestamp">
+                                    ${timestamp} ${isMe ? '<i class="fas fa-check-double" style="color:var(--titan-primary-neon)"></i>' : ''}
+                                </span>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                    msgCount++;
+                });
+
+                display.scrollTop = display.scrollHeight; // অটো স্ক্রল ডাউন
+                if (msgCount > 0) {
+                    document.getElementById('hfx-incoming').play().catch(() => {});
+                }
             });
-            scroller.scrollTop = scroller.scrollHeight;
-        });
-    }
+        },
 
-    function pushTypingSignal() {
-        if (!ACTIVE_CHAT_PARTNER) return;
-        kernel_db.ref('typing_engine/' + btoa(SYSTEM_USER_ID) + '/' + btoa(ACTIVE_CHAT_PARTNER)).set(true);
-        clearTimeout(TYPING_DEBOUNCE_TIMER);
-        TYPING_DEBOUNCE_TIMER = setTimeout(() => {
-            kernel_db.ref('typing_engine/' + btoa(SYSTEM_USER_ID) + '/' + btoa(ACTIVE_CHAT_PARTNER)).set(false);
-        }, 2500);
-    }
+        dispatchPacket: function() {
+            const rawText = document.getElementById('packet-input-field').value.trim();
+            if (!rawText || !ACTIVE_PARTNER_PH) return;
 
-    function executeSendMessage() {
-        const text = document.getElementById('field-msg').value.trim();
-        if (!text || !ACTIVE_CHAT_PARTNER) return;
+            const CHANNEL_ID = [btoa(SESSION_IDENTITY), btoa(ACTIVE_PARTNER_PH)].sort().join("_X_TITAN_X_");
+            const payload = {
+                sender: SESSION_IDENTITY,
+                message: rawText,
+                time: Date.now()
+            };
 
-        const CHAT_CHANNEL_ID = [SYSTEM_USER_ID, ACTIVE_CHAT_PARTNER].sort().join("___");
-        const payload = {
-            s: SYSTEM_USER_ID,
-            x: text,
-            t: Date.now()
-        };
+            // ডাটাবেসে প্যাকেট পুশ করা
+            TITAN_DB.ref('titan_v50/vortex/' + CHANNEL_ID).push(payload).then(() => {
+                // কানেকশন লিস্টের টাইম আপডেট করা (যাতে চ্যাট লিস্টের উপরে চলে আসে)
+                TITAN_DB.ref('titan_v50/connections/' + btoa(SESSION_IDENTITY) + '/' + btoa(ACTIVE_PARTNER_PH)).update({ sync_time: Date.now() });
+                
+                document.getElementById('packet-input-field').value = "";
+                document.getElementById('hfx-outgoing').play().catch(() => {});
+                
+                // টাইপিং সিগন্যাল অফ করা
+                TITAN_DB.ref('titan_v50/signals/' + btoa(SESSION_IDENTITY) + '/' + btoa(ACTIVE_PARTNER_PH)).set(false);
+            });
+        },
 
-        kernel_db.ref('secure_vault/' + CHAT_CHANNEL_ID).push(payload).then(() => {
-            // Update last active sync
-            kernel_db.ref('contacts/' + btoa(SYSTEM_USER_ID) + '/' + btoa(ACTIVE_CHAT_PARTNER)).update({ sync: Date.now() });
-            document.getElementById('field-msg').value = "";
-            kernel_db.ref('typing_engine/' + btoa(SYSTEM_USER_ID) + '/' + btoa(ACTIVE_CHAT_PARTNER)).set(false);
-        });
-    }
+        emitPulse: function() {
+            if (!ACTIVE_PARTNER_PH) return;
+            TITAN_DB.ref('titan_v50/signals/' + btoa(SESSION_IDENTITY) + '/' + btoa(ACTIVE_PARTNER_PH)).set(true);
+            
+            clearTimeout(window.pulseTimer);
+            window.pulseTimer = setTimeout(() => {
+                TITAN_DB.ref('titan_v50/signals/' + btoa(SESSION_IDENTITY) + '/' + btoa(ACTIVE_PARTNER_PH)).set(false);
+            }, 3000);
+        },
 
-    /* -----------------------------------------------------------
-     17. SYSTEM TERMINATION & UTILS
-     -----------------------------------------------------------
-    */
-    function exitInbox() {
-        if (ACTIVE_CHAT_PARTNER) {
-            kernel_db.ref('typing_engine/' + btoa(SYSTEM_USER_ID) + '/' + btoa(ACTIVE_CHAT_PARTNER)).set(false);
+        close: function() {
+            if (ACTIVE_PARTNER_PH) {
+                TITAN_DB.ref('titan_v50/signals/' + btoa(SESSION_IDENTITY) + '/' + btoa(ACTIVE_PARTNER_PH)).set(false);
+            }
+            document.getElementById('quantum-inbox-overlay').style.display = 'none';
+            ACTIVE_PARTNER_PH = null;
         }
-        document.getElementById('inbox-panel').style.display = 'none';
-        ACTIVE_CHAT_PARTNER = null;
-    }
+    };
 
-    function triggerLogout() {
-        if (confirm("আপনি কি লগআউট করতে নিশ্চিত?")) {
-            kernel_db.ref('online_heartbeat/' + btoa(SYSTEM_USER_ID)).set(false);
-            localStorage.clear();
-            location.reload();
+    // G. [TITAN SYSTEM MODULE] - হার্টবিট এবং সেশন ম্যানেজমেন্ট
+    const TitanSystemModule = {
+        boot: function() {
+            if (SESSION_IDENTITY) {
+                console.log("SystemBoot: Identity confirmed. Bypassing Auth.");
+                document.getElementById('auth-gate-layer').classList.add('hidden');
+                document.getElementById('dashboard-layer').classList.remove('hidden');
+                
+                // বর্তমান ইউজারের প্রোফাইল নাম সেট করা
+                TITAN_DB.ref('titan_v50/users/' + btoa(SESSION_IDENTITY)).once('value', s => {
+                    if(s.exists()) document.getElementById('my-display-name').innerText = s.val().name.toUpperCase();
+                });
+
+                // অনলাইন স্ট্যাটাস সেটআপ
+                TITAN_DB.ref('titan_v50/presence/' + btoa(SESSION_IDENTITY)).set(true);
+                TITAN_DB.ref('titan_v50/presence/' + btoa(SESSION_IDENTITY)).onDisconnect().set(false);
+                
+                TitanSocialModule.loadContacts();
+                checkTitanUpdates(); // আপডেট চেক করা শুরু
+            } else {
+                console.log("SystemBoot: No session found. Entering Auth Layer.");
+            }
+        },
+
+        terminateSession: function() {
+            if (confirm("আপনি কি নিশ্চিতভাবে আপনার সেশন টার্মিনেট (লগআউট) করতে চান?")) {
+                TITAN_DB.ref('titan_v50/presence/' + btoa(SESSION_IDENTITY)).set(false);
+                localStorage.clear();
+                location.reload();
+            }
         }
-    }
+    };
 
-    // FINAL BOOT LOGS
-    console.log("Lal Bilai Engine Booted Successfully...");
-    console.log("Security Layer: Active");
-    console.log("Real-time Sync: Enabled");
+    // সিস্টেম স্টার্ট আপ
+    console.log("Kernel: Initializing Titan-X Engine...");
+    TitanSystemModule.boot();
 
 </script>
 </body>
